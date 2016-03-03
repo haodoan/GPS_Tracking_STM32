@@ -1,0 +1,15 @@
+"D:\Install Program\IAR Systems\Embedded Workbench 7.2\arm\bin\armproc.dll" 
+
+"D:\Install Program\IAR Systems\Embedded Workbench 7.2\arm\bin\armjlink2.dll" 
+
+"D:\Setup\FreeRTOS\FreeRTOSV8.2.3\FreeRTOS\Demo\CORTEX_STM32F103_IAR\Debug\Exe\RTOSDemo.out" 
+
+--plugin "D:\Install Program\IAR Systems\Embedded Workbench 7.2\arm\bin\armbat.dll" 
+
+--device_macro "D:\Install Program\IAR Systems\Embedded Workbench 7.2\arm\config\debugger\ST\STM32F1xx_XL.dmac" 
+
+--flash_loader "D:\Install Program\IAR Systems\Embedded Workbench 7.2\arm\config\flashloader\ST\FlashSTM32F10xxB.board" 
+
+
+
+
