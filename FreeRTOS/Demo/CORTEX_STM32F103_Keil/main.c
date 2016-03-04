@@ -213,6 +213,8 @@ extern void vSetupTimerTest( void );
 /* The queue used to send messages to the LCD task. */
 QueueHandle_t xLCDQueue;
 
+extern uart_rtos_handle_t uart1_handle;
+extern uart_rtos_handle_t uart2_handle;
 /*-----------------------------------------------------------*/
 
 int main( void )
@@ -237,7 +239,7 @@ int main( void )
 //	vAltStartComTestTasks( mainCOM_TEST_PRIORITY, mainCOM_TEST_BAUD_RATE, mainCOM_TEST_LED );
 
 	/* Start the tasks defined within this file/specific to this demo. */
-  xTaskCreate( vCheckTask, "Check", mainCHECK_TASK_STACK_SIZE, NULL, mainCHECK_TASK_PRIORITY, NULL );
+    xTaskCreate( vCheckTask, "Check", mainCHECK_TASK_STACK_SIZE, NULL, mainCHECK_TASK_PRIORITY, NULL );
 	xTaskCreate( vLCDTask, "LCD", configMINIMAL_STACK_SIZE, NULL, tskIDLE_PRIORITY, NULL );
 
 	/* The suicide tasks must be created last as they need to know how many
@@ -264,7 +266,7 @@ void vLCDTask( void *pvParameters )
 	/* Initialise the LCD and display a startup message. */
 //	prvConfigureLCD();
 	//LCD_DrawMonoPict( ( unsigned long * ) pcBitmap );
-	//printf("vLCDTask\n");
+	printf("vLCDTask\n");
 	for( ;; )
 	{
 		//printf("vLCDTask\n");
@@ -280,7 +282,7 @@ static void vCheckTask( void *pvParameters )
 //	TickType_t xLastExecutionTime;
 	char buff_receive[20];
 //	xLastExecutionTime = xTaskGetTickCount();
-
+    printf("vCheckTask\n");
   for( ;; )
 	{
 		GetResponse(buff_receive,2000);
@@ -348,7 +350,7 @@ static void prvSetupHardware( void )
 	/* Configure HCLK clock as SysTick clock source. */
 	SysTick_CLKSourceConfig( SysTick_CLKSource_HCLK );
 	
-	xSerialPortInitMinimal( 115200, 64);
+	xSerialPortInitMinimal(USART1,&uart1_handle, 115200, 64);
 
 	vParTestInitialise();
 }
@@ -358,7 +360,7 @@ int fputc( int ch, FILE *f )
 {
   /* Place your implementation of fputc here */
   /* e.g. write a character to the USART */
-	xSerialPutChar( NULL, ch, 1000);
+	xSerialPutChar(&uart1_handle, ch, 1000);
 	
 	return ch;
 }
