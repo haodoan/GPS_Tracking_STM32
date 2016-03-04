@@ -79,8 +79,8 @@ uint8_t start_GPS(void)
     // Reset GPS Hot mde
     // sendATcommand("AT+CGPSRST=1", "OK", 2000);
     // waits for fix GPS
-    if ((pdTRUE == sendATcommand("AT+CGPSSTATUS?", "2D Fix", 2000)) ||
-        (pdTRUE == sendATcommand("AT+CGPSSTATUS?", "3D Fix", 2000)))
+    if ((pdTRUE == sendATcommand("AT+CGPSSTATUS?", "Location 2D Fix", 2000)) ||
+        (pdTRUE == sendATcommand("AT+CGPSSTATUS?", "Location 3D Fix", 2000)))
     {
         return pdTRUE;
     }
