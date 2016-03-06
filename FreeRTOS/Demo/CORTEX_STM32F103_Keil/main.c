@@ -111,60 +111,18 @@
 #include "stm32f10x_it.h"
 
 /* Demo app includes. */
-#include "lcd.h"
-#include "LCD_Message.h"
-#include "BlockQ.h"
-#include "death.h"
-#include "integer.h"
-#include "blocktim.h"
-#include "partest.h"
-#include "semtest.h"
-#include "PollQ.h"
-#include "flash.h"
-#include "comtest2.h"
 #include "serial.h"
-
 #include "sim908.h"
+
 /* Task priorities. */
-#define mainQUEUE_POLL_PRIORITY				( tskIDLE_PRIORITY + 2 )
-#define mainCHECK_TASK_PRIORITY				( tskIDLE_PRIORITY + 3 )
-#define mainSEM_TEST_PRIORITY				( tskIDLE_PRIORITY + 1 )
-#define mainBLOCK_Q_PRIORITY				( tskIDLE_PRIORITY + 2 )
-#define mainCREATOR_TASK_PRIORITY           ( tskIDLE_PRIORITY + 3 )
-#define mainFLASH_TASK_PRIORITY				( tskIDLE_PRIORITY + 1 )
-#define mainCOM_TEST_PRIORITY				( tskIDLE_PRIORITY + 1 )
-#define mainINTEGER_TASK_PRIORITY           ( tskIDLE_PRIORITY )
-
-/* Constants related to the LCD. */
-#define mainMAX_LINE						  ( 240 )
-#define mainROW_INCREMENT					( 24 )
-#define mainMAX_COLUMN						( 20 )
-#define mainCOLUMN_START					( 319 )
-#define mainCOLUMN_INCREMENT 			( 16 )
-
-/* The maximum number of message that can be waiting for display at any one
-time. */
-#define mainLCD_QUEUE_SIZE					( 3 )
-
+#define mainGPS_TASK_PRIORITY				( tskIDLE_PRIORITY + 3 )
+#define mainLED_TASK_PRIORITY				( tskIDLE_PRIORITY)
 /* The check task uses the sprintf function so requires a little more stack. */
-#define mainCHECK_TASK_STACK_SIZE			( configMINIMAL_STACK_SIZE + 50 )
-
-/* Dimensions the buffer into which the jitter time is written. */
-#define mainMAX_MSG_LEN						25
-
+#define mainGPS_TASK_STACK_SIZE			( configMINIMAL_STACK_SIZE + 50 )
+#define mainLED_TASK_STACK_SIZE			( configMINIMAL_STACK_SIZE)
 /* The time between cycles of the 'check' task. */
-#define mainCHECK_DELAY						( ( TickType_t ) 5000 / portTICK_PERIOD_MS )
-
-/* The number of nano seconds between each processor clock. */
-#define mainNS_PER_CLOCK ( ( unsigned long ) ( ( 1.0 / ( double ) configCPU_CLOCK_HZ ) * 1000000000.0 ) )
-
-/* Baud rate used by the comtest tasks. */
-#define mainCOM_TEST_BAUD_RATE		( 115200 )
-
-/* The LED used by the comtest tasks. See the comtest.c file for more
-information. */
-#define mainCOM_TEST_LED			( 3 )
-
+#define mainGPS_DELAY						( ( TickType_t ) 5000 / portTICK_PERIOD_MS )
+#define mainLED_BLINK_DELAY				    (500)
 /*-----------------------------------------------------------*/
 
 /*
@@ -173,17 +131,12 @@ information. */
 static void prvSetupHardware( void );
 
 /*
- * Configure the LCD as required by the demo.
- */
-static void prvConfigureLCD( void );
-
-/*
  * The LCD is written two by more than one task so is controlled by a
  * 'gatekeeper' task.  This is the only task that is actually permitted to
  * access the LCD directly.  Other tasks wanting to display a message send
  * the message to the gatekeeper.
  */
-static void vLCDTask( void *pvParameters );
+static void vLEDTask( void *pvParameters );
 
 /*
  * Retargets the C library printf function to the USART.
@@ -200,7 +153,7 @@ int fputc( int ch, FILE *f );
  * Messages are not written directly to the terminal, but passed to vLCDTask
  * via a queue.
  */
-static void vCheckTask( void *pvParameters );
+static void vGPSTask( void *pvParameters );
 
 /*
  * Configures the timers and interrupts for the fast interrupt test as
@@ -208,11 +161,7 @@ static void vCheckTask( void *pvParameters );
  */
 extern void vSetupTimerTest( void );
 
-/*-----------------------------------------------------------*/
-
-/* The queue used to send messages to the LCD task. */
-QueueHandle_t xLCDQueue;
-
+/*handler for using USART*/
 extern uart_rtos_handle_t uart1_handle;
 extern uart_rtos_handle_t uart2_handle;
 /*-----------------------------------------------------------*/
@@ -226,9 +175,7 @@ int main( void )
 	prvSetupHardware();
 
 	/* Create the queue used by the LCD task.  Messages for display on the LCD
-	are received via this queue. */
-	xLCDQueue = xQueueCreate( mainLCD_QUEUE_SIZE, sizeof( xLCDMessage ) );
-
+	are received via this queue. */	
 	/* Start the standard demo tasks. */
 //	vStartBlockingQueueTasks( mainBLOCK_Q_PRIORITY );
 //	vCreateBlockTimeTasks();
@@ -239,8 +186,8 @@ int main( void )
 //	vAltStartComTestTasks( mainCOM_TEST_PRIORITY, mainCOM_TEST_BAUD_RATE, mainCOM_TEST_LED );
 
 	/* Start the tasks defined within this file/specific to this demo. */
-    xTaskCreate( vCheckTask, "Check", mainCHECK_TASK_STACK_SIZE, NULL, mainCHECK_TASK_PRIORITY, NULL );
-	xTaskCreate( vLCDTask, "LCD", configMINIMAL_STACK_SIZE, NULL, tskIDLE_PRIORITY, NULL );
+    xTaskCreate( vGPSTask, "Check", mainGPS_TASK_STACK_SIZE, NULL, mainGPS_TASK_PRIORITY, NULL );
+	xTaskCreate( vLEDTask, "LED", mainLED_TASK_STACK_SIZE, NULL, mainLED_TASK_PRIORITY, NULL );
 
 	/* The suicide tasks must be created last as they need to know how many
 	tasks were running prior to their creation in order to ascertain whether
@@ -259,30 +206,34 @@ int main( void )
 }
 /*-----------------------------------------------------------*/
 
-void vLCDTask( void *pvParameters )
+void vLEDTask( void *pvParameters )
 {
 //xLCDMessage xMessage;
-
+    uint8_t val = 0;
 	/* Initialise the LCD and display a startup message. */
 //	prvConfigureLCD();
 	//LCD_DrawMonoPict( ( unsigned long * ) pcBitmap );
-	printf("vLCDTask\r");
+	printf("vLED blink\r");  
+
+
 	for( ;; )
 	{
-		//printf("vLCDTask\n");
-		vTaskDelay ( 20 );
+        val = !val;
+        GPIO_WriteBit(GPIOC, GPIO_Pin_13,(BitAction)val);
+		vTaskDelay ( mainLED_BLINK_DELAY );
 		/* Wait for a message to arrive that requires displaying. */
 		//while( xQueueReceive( xLCDQueue, &xMessage, portMAX_DELAY ) != pdPASS );
 	}
 }
 /*-----------------------------------------------------------*/
 signed char pcRxedChar;
-static void vCheckTask( void *pvParameters )
+static void vGPSTask( void *pvParameters )
 {
     //	TickType_t xLastExecutionTime;
     char buff_receive[20];
     //	xLastExecutionTime = xTaskGetTickCount();
-    printf("vCheckTask\r\n");
+    printf("vGPSTask\r\n");
+    Sim908_setup();
     for( ;; )
     {
         GetResponse(buff_receive,20000);
@@ -293,6 +244,8 @@ static void vCheckTask( void *pvParameters )
 
 static void prvSetupHardware( void )
 {
+    GPIO_InitTypeDef GPIO_InitStructure;
+    
     /* Enable HSE (high speed external clock). */
     RCC_HSEConfig( RCC_HSE_ON );
 
@@ -350,6 +303,11 @@ static void prvSetupHardware( void )
 	
 	xSerialPortInitMinimal(USART2,&uart2_handle, 115200, 16);
 
+    /*Initial for led*/
+    GPIO_InitStructure.GPIO_Pin = GPIO_Pin_13;
+    GPIO_InitStructure.GPIO_Speed = GPIO_Speed_50MHz;
+    GPIO_InitStructure.GPIO_Mode = GPIO_Mode_Out_PP;
+    GPIO_Init( GPIOC, &GPIO_InitStructure );    
 	//vParTestInitialise();
 }
 /*-----------------------------------------------------------*/

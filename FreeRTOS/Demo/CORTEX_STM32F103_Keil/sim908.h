@@ -26,5 +26,5 @@ void Config_GPRS_SIM908(void);
 TCP_STATUS TCP_Connect(char *IP_address, char *Port);
 TCP_STATUS TCP_Send(char *data_string)	;
 TCP_STATUS TCP_Close(void);
-void setup(void);
-void power_on(void);
+void Sim908_setup(void);
+void Sim908_power_on(void);

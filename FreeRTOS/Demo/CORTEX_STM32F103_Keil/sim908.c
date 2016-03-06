@@ -211,9 +211,9 @@ TCP_STATUS TCP_Close(void)
     return TCP_FAIL;
 }
 
-void setup(void)
+void Sim908_setup(void)
 {
-    power_on(); // Power up Sim908 module
+    Sim908_power_on(); // Power up Sim908 module
                 //    delay(10000); // wait
     // SentEnglis_SIMmsg("0944500186","123456");
     /*****Config Sim908 Module *****************************/
@@ -230,8 +230,7 @@ void setup(void)
     sendATcommand("AT+CREG=2", "OK", 2000);
     /************End Config Sim908 Module *****************************/
     // delay(1000);
-    while (sendATcommand("AT+CREG?", "+CREG: 2,1", 2000) == 0)
-        ; // Wait register to network
+    while (sendATcommand("AT+CREG?", "+CREG: 2,1", 2000) == pdFALSE);
     // Configure DNS server address
     sendATcommand("AT+CGATT", "OK", 2000);
     // delay(1000);
@@ -249,28 +248,18 @@ void setup(void)
     // Config_GPRS_SIM908();
 }
 
-void power_on(void)
+void Sim908_power_on(void)
 {
-    uint8_t answer = 0;
-    /* Initialize I/Os in Output Mode */
-    // checks if the module is started
 
-    answer = sendATcommand("AT", "OK", 2000);
-    if (answer == 0)
+    if (pdTRUE == sendATcommand("AT", "OK", 2000))
     { // power on pulse
         SIM908_PWRON;
         delay_ms(3000);
         SIM908_PWROFF;
         // Wake up
-        // GPIO_WriteLow(PWKEY_GPIO_PORT, (GPIO_Pin_TypeDef)DTR_GPIO_PINS);
         // waits for an answer from the module
         printf("ATE0\r");
-        while (answer == 0)
-        {
-            // Send AT every two seconds and wait for the answer
-            answer = sendATcommand("AT", "OK", 2000);
-            // while(UART1_GetFlagStatus(UART1_FLAG_RXNE) == RESET);
-        }
+        while(pdFALSE == sendATcommand("AT", "OK", 2000));
     }
 
     printf("ATE0\r");
