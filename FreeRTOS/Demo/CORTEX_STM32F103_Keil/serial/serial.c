@@ -113,8 +113,14 @@ xComPortHandle xSerialPortInitMinimal(USART_TypeDef * base,uart_rtos_handle_t *h
     if( ( handle->xRxedChars != serINVALID_QUEUE ) && ( handle->xCharsForTx != serINVALID_QUEUE ) )
     {
         /* Enable USART1 clock */
-        RCC_APB2PeriphClockCmd( RCC_APB2Periph_USART1 | RCC_APB1Periph_USART2|RCC_APB2Periph_GPIOA, ENABLE );   
-
+        if(handle->base == USART1)
+        {
+            RCC_APB2PeriphClockCmd( RCC_APB2Periph_USART1|RCC_APB2Periph_GPIOA, ENABLE );   
+        }
+        else
+        {
+            RCC_APB1PeriphClockCmd( RCC_APB1Periph_USART2|RCC_APB2Periph_GPIOA, ENABLE );   
+        }
         /* Configure USART1 Rx (PA10) as input floating */
         (handle->base == USART1)? (GPIO_InitStructure.GPIO_Pin = GPIO_Pin_10):(GPIO_InitStructure.GPIO_Pin = GPIO_Pin_3);
         GPIO_InitStructure.GPIO_Mode = GPIO_Mode_IN_FLOATING;

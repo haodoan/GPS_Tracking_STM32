@@ -15,7 +15,7 @@
 /* Demo application includes. */
 #include "sim908.h"
 
-extern uart_rtos_handle_t uart1_handle;
+extern uart_rtos_handle_t uart2_handle;
 
 /*Get response from SIMCOM after send AT command*/
 uint8_t GetResponse(char *buff_receive, uint32_t timeout)
@@ -25,7 +25,7 @@ uint8_t GetResponse(char *buff_receive, uint32_t timeout)
     char cPassMessage[MAX_LENGH_STR];
     do
     {
-        if (pdFALSE != xSerialGetChar(&uart1_handle, &SIM_RxChar, timeout))
+        if (pdFALSE != xSerialGetChar(&uart2_handle, &SIM_RxChar, timeout))
         {
             cPassMessage[count_char++] = SIM_RxChar;
         }
@@ -40,9 +40,9 @@ uint8_t GetResponse(char *buff_receive, uint32_t timeout)
     {
         return pdFALSE;
     }
-
+    cPassMessage[count_char] = '\0';
     strcpy(buff_receive, cPassMessage);
-
+    
     return pdTRUE;
 }
 
