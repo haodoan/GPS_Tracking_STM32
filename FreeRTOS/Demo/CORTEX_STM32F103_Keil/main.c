@@ -95,7 +95,7 @@
  * write an error to the LCD (via the LCD task).  If all the demo tasks are
  * executing with their expected behaviour then the check task writes PASS
  * along with the max jitter time to the LCD (again via the LCD task), as
- * described above.
+ ":.k, * described above.
  *
  */
 
@@ -103,6 +103,7 @@
 #include <stdio.h>
 
 /* Scheduler includes. */
+
 #include "FreeRTOS.h"
 #include "task.h"
 #include "queue.h"
@@ -116,9 +117,11 @@
 
 /* Task priorities. */
 #define mainGPS_TASK_PRIORITY				( tskIDLE_PRIORITY + 3 )
+#define mainGPRS_TASK_PRIORITY              ( tskIDLE_PRIORITY + 4 )
 #define mainLED_TASK_PRIORITY				( tskIDLE_PRIORITY)
 /* The check task uses the sprintf function so requires a little more stack. */
 #define mainGPS_TASK_STACK_SIZE			( configMINIMAL_STACK_SIZE + 50 )
+#define mainGPRS_TASK_STACK_SIZE        ( configMINIMAL_STACK_SIZE + 50 )
 #define mainLED_TASK_STACK_SIZE			( configMINIMAL_STACK_SIZE)
 /* The time between cycles of the 'check' task. */
 #define mainGPS_DELAY						( ( TickType_t ) 5000 / portTICK_PERIOD_MS )
@@ -155,6 +158,8 @@ int fputc( int ch, FILE *f );
  */
 static void vGPSTask( void *pvParameters );
 
+static void vGPRSTask( void *pvParameters );
+
 /*
  * Configures the timers and interrupts for the fast interrupt test as
  * described at the top of this file.
@@ -164,6 +169,8 @@ extern void vSetupTimerTest( void );
 /*handler for using USART*/
 extern uart_rtos_handle_t uart1_handle;
 extern uart_rtos_handle_t uart2_handle;
+
+QueueHandle_t  SIM908_queue;
 /*-----------------------------------------------------------*/
 
 int main( void )
@@ -175,7 +182,7 @@ int main( void )
 	prvSetupHardware();
 
 	/* Create the queue used by the LCD task.  Messages for display on the LCD
-	are received via this queue. */	
+	are received via t878 nnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnhjuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuunh8    jnhhhhhhhhhhhhhhhhhhhyunhjuuuuuuuuuuuuuuuuuuuuuuuuu  queue         ././.;p/////////////////////////////////////////////////////////////////his queue. */	
 	/* Start the standard demo tasks. */
 //	vStartBlockingQueueTasks( mainBLOCK_Q_PRIORITY );
 //	vCreateBlockTimeTasks();
@@ -185,9 +192,16 @@ int main( void )
 //	vStartLEDFlashTasks( mainFLASH_TASK_PRIORITY );
 //	vAltStartComTestTasks( mainCOM_TEST_PRIORITY, mainCOM_TEST_BAUD_RATE, mainCOM_TEST_LED );
 
+    SIM908_queue = xQueueCreate( 10, sizeof(GPS_INFO));
+    if(SIM908_queue == NULL)
+    {
+        while(TRUE);
+    }
+
 	/* Start the tasks defined within this file/specific to this demo. */
-    xTaskCreate( vGPSTask, "Check", mainGPS_TASK_STACK_SIZE, NULL, mainGPS_TASK_PRIORITY, NULL );
-	xTaskCreate( vLEDTask, "LED", mainLED_TASK_STACK_SIZE, NULL, mainLED_TASK_PRIORITY, NULL );
+    //xTaskCreate( vGPSTask, "GPS", mainGPS_TASK_STACK_SIZE, NULL, mainGPS_TASK_PRIORITY, NULL );
+    xTaskCreate( vGPRSTask, "GPRS", mainGPRS_TASK_STACK_SIZE, NULL, mainGPRS_TASK_PRIORITY, NULL );
+	//xTaskCreate( vLEDTask, "LED", mainLED_TASK_STACK_SIZE, NULL, mainLED_TASK_PRIORITY, NULL );
 
 	/* The suicide tasks must be created last as they need to know how many
 	tasks were running prior to their creation in order to ascertain whether
@@ -213,7 +227,7 @@ void vLEDTask( void *pvParameters )
 	/* Initialise the LCD and display a startup message. */
 //	prvConfigureLCD();
 	//LCD_DrawMonoPict( ( unsigned long * ) pcBitmap );
-	printf("vLED blink\r");  
+	//printf("vLED blink\r");  
 
 
 	for( ;; )
@@ -226,18 +240,80 @@ void vLEDTask( void *pvParameters )
 	}
 }
 /*-----------------------------------------------------------*/
-signed char pcRxedChar;
+#define GPS_BLOCK_TIME  1000
 static void vGPSTask( void *pvParameters )
 {
+    GPS_INFO vGPSinfo;
     //	TickType_t xLastExecutionTime;
-    char buff_receive[20];
+    //char buff_receive[20];
     //	xLastExecutionTime = xTaskGetTickCount();
-    printf("vGPSTask\r\n");
-    Sim908_setup();
+    //  printf("vGPSTask\r\n");
+    //printf("ATD+84944500186;\r");
+    GPS_PWR();
     for( ;; )
     {
-        GetResponse(buff_receive,20000);
-        printf("data receive %s",buff_receive);
+        if(pdTRUE == Wait_GPS_Fix())
+        {
+            get_GPS(&vGPSinfo);
+            if( xQueueSend(SIM908_queue, &vGPSinfo, GPS_BLOCK_TIME ) != pdPASS )
+            {
+
+            }            
+        }
+
+        vTaskDelay(1000);
+    }
+}
+
+#define IPADDRESS "192.168.15.19"
+#define PORT 1234
+#define GPRS_BLOCK_TIME  2000
+
+char buff_receive[160];
+static void vGPRSTask( void *pvParameters )
+{
+    
+    GPS_INFO vGPSinfo;
+    TCP_STATUS vTCP_status;
+    char gprs_buffer[200] = {0};
+    //Set up sim908
+    Sim908_setup();
+    //setting gprs for Sim module
+    Config_GPRS_SIM908();
+ 
+    GetAccount();
+    while(1);
+    xTaskCreate( vGPSTask, "GPS", mainGPS_TASK_STACK_SIZE, NULL, mainGPS_TASK_PRIORITY, NULL );
+    
+    vTCP_status = TCP_Connect((char *)IPADDRESS, (char*)PORT);
+
+    for( ;; )
+    {        
+        if(xQueueReceive(SIM908_queue, &vGPSinfo,GPRS_BLOCK_TIME))
+        {
+            if(vTCP_status == TCP_SUCCESS)
+            {
+                /*clear buffer here
+                
+                */
+                sprintf(gprs_buffer,"%s,%s",vGPSinfo.latitude,vGPSinfo.longtitude);
+                TCP_Send(gprs_buffer) ;    
+            }
+            else
+            {
+                if(TCP_SUCCESS == TCP_Close())
+                {
+                    TCP_Connect((char *)IPADDRESS, (char*)PORT);    
+                }
+                else
+                {
+                    while(TCP_SUCCESS!= TCP_Close());
+                }
+                                
+            }
+            
+        }
+
     }
 }
 /*-----------------------------------------------------------*/

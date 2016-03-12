@@ -20,21 +20,25 @@ extern uart_rtos_handle_t uart2_handle;
 /*Get response from SIMCOM after send AT command*/
 uint8_t GetResponse(char *buff_receive, uint32_t timeout)
 {
-    uint8_t count_char = 0;
+    uint8_t count_char = 0;    
+    TickType_t xtime;
     signed char SIM_RxChar;
     char cPassMessage[MAX_LENGH_STR];
+    
+    xtime = xTaskGetTickCount();
+    
     do
-    {
-        if (pdFALSE != xSerialGetChar(&uart2_handle, &SIM_RxChar, timeout))
+    {        
+        if (pdFALSE != xSerialGetChar(&uart2_handle, &SIM_RxChar, 10))
         {
             cPassMessage[count_char++] = SIM_RxChar;
         }
         else
         {
-            return pdFALSE;
-        }
-
-    } while ((SIM_RxChar != '\r') && (count_char < MAX_LENGH_STR));
+            if((SIM_RxChar == 0xA) && (cPassMessage[count_char -2] == 0xD) && (count_char >= 2))
+                break;
+        }      
+    } while ((xTaskGetTickCount() - xtime < timeout )&&(count_char < MAX_LENGH_STR));
 
     if (count_char == MAX_LENGH_STR)
     {
@@ -63,6 +67,14 @@ int8_t sendATcommand(char *ATcommand, char *expected_answer, unsigned int timeou
     return pdTRUE;
 }
 
+uint8_t GPS_PWR()
+{
+   // Power up GPS
+     sendATcommand("AT+CGPSPWR=1", "OK", 2000);    
+    // Reset GPS Hot m0de
+     sendATcommand("AT+CGPSRST=1", "OK", 2000);
+     return pdTRUE;
+}
 /*FUNCTION**********************************************************************
  *
  * Function Name : start_GPS
@@ -70,14 +82,8 @@ int8_t sendATcommand(char *ATcommand, char *expected_answer, unsigned int timeou
  * This function
  *
  *END**************************************************************************/
-uint8_t start_GPS(void)
+BaseType_t Wait_GPS_Fix(void)
 {
-    // Wake up Module Sim
-    // GPIO_WriteLow(PWKEY_GPIO_PORT, (GPIO_Pin_TypeDef)DTR_GPIO_PINS);
-    // Power up GPS
-    // sendATcommand("AT+CGPSPWR=1", "OK", 2000);
-    // Reset GPS Hot mde
-    // sendATcommand("AT+CGPSRST=1", "OK", 2000);
     // waits for fix GPS
     if ((pdTRUE == sendATcommand("AT+CGPSSTATUS?", "Location 2D Fix", 2000)) ||
         (pdTRUE == sendATcommand("AT+CGPSSTATUS?", "Location 3D Fix", 2000)))
@@ -97,27 +103,27 @@ uint8_t start_GPS(void)
  * This function use config get parameter GPS
  *
  *END**************************************************************************/
-#if 0
-uint8_t get_GPS(void)
+uint8_t get_GPS(GPS_INFO *vGPSinfo)
 {   
     char buffer_response[MAX_LENGH_STR];
+    //GPS_INFO vGPSinfo;
     // First get the NMEA string
     printf("AT+CGPSINF=0\r");
-    if(pdTRUE == GetResponse(buffer_response,"OK",2000))
+    if(pdTRUE == GetResponse(buffer_response,2000))
     {
         strtok(buffer_response, ",");
-        strcpy(longitude,strtok(NULL, ",")); // Gets longitude
-        strcpy(latitude,strtok(NULL, ",")); // Gets latitude
-        strcpy(altitude,strtok(NULL, ".")); // Gets altitude
+        strcpy(vGPSinfo->longtitude,strtok(NULL, ",")); // Gets longitude
+        strcpy(vGPSinfo->latitude,strtok(NULL, ",")); // Gets latitude
+        //strcpy(altitude,strtok(NULL, ".")); // Gets altitude
+        strtok(NULL, ".");
         strtok(NULL, ",");
-        strcpy(date,strtok(NULL, ".")); // Gets date
+        strcpy(vGPSinfo->date,strtok(NULL, ".")); // Gets date
         strtok(NULL, ",");
         //free(buffer_gps_t) ;
         return pdTRUE ;
     }
     return pdFALSE;
 }
-#endif
 /*FUNCTION**********************************************************************
  *
  * Function Name : Config_GPRS_SIM908
@@ -211,9 +217,33 @@ TCP_STATUS TCP_Close(void)
     return TCP_FAIL;
 }
 
+uint8_t GetAccount()
+{
+    char SIM_RxChar;
+    char buffer_acc[160] , *ptr_buff;
+    uint16_t cnt = 0;
+    ptr_buff = buffer_acc;
+
+    if (sendATcommand("AT+CUSD=1,\"*101#\"", "OK", 2000))
+    {
+        do {
+            if (pdFALSE != xSerialGetChar(&uart2_handle, &SIM_RxChar, 0xffff))
+            {
+                *(ptr_buff++) = SIM_RxChar;            
+                cnt++;
+            }
+            if((*(ptr_buff - 2)==0xD) && (SIM_RxChar ==0xA) && (cnt > 2))
+            {
+                break;
+            }
+        }while(1) ;
+    }
+    *ptr_buff = '\0';
+    return pdTRUE;
+}
 void Sim908_setup(void)
 {
-    Sim908_power_on(); // Power up Sim908 module
+    //Sim908_power_on(); // Power up Sim908 module
                 //    delay(10000); // wait
     // SentEnglis_SIMmsg("0944500186","123456");
     /*****Config Sim908 Module *****************************/
