@@ -212,13 +212,13 @@ TCP_STATUS TCP_Send(char *data_string)
     char *data_ctrl_z;
     TCP_STATUS status;
     data_ctrl_z = malloc(strlen(data_string) + 2);
-    if (1 == sendATcommand("AT+CIPSTATUS", "CONNECT OK", 20000))
+    if (1 == sendATcommand2("AT+CIPSTATUS", "CONNECT OK", 20000))
     {
         // memset(data_ctrl_z , '\0',120);
-        if (sendATcommand("AT+CIPSEND", ">", 20000))
+        if (sendATcommand2("AT+CIPSEND", ">", 20000))
         {
             sprintf(data_ctrl_z, "%s%c", data_string, 26);
-            if (!sendATcommand(data_ctrl_z, "SEND OK", 30000))
+            if (!sendATcommand2(data_ctrl_z, "SEND OK", 30000))
             {
                 status = TCP_SEND_TIMEOUT;
             }

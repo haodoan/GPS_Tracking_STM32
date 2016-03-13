@@ -240,7 +240,7 @@ void vLEDTask( void *pvParameters )
 	}
 }
 /*-----------------------------------------------------------*/
-#define GPS_BLOCK_TIME  1000
+#define GPS_BLOCK_TIME  0
 static void vGPSTask( void *pvParameters )
 {
     GPS_INFO vGPSinfo;
@@ -260,7 +260,7 @@ static void vGPSTask( void *pvParameters )
 
             }            
         }
-
+        TCP_Send("GPS ...\r");
         vTaskDelay(1000);
     }
 }
@@ -269,7 +269,6 @@ static void vGPSTask( void *pvParameters )
 #define PORT "8888"
 #define GPRS_BLOCK_TIME  2000
 
-char buff_receive[160];
 static void vGPRSTask( void *pvParameters )
 {
     
@@ -279,39 +278,33 @@ static void vGPRSTask( void *pvParameters )
     //Set up sim908
     Sim908_setup();
     //setting gprs for Sim module
-    Config_GPRS_SIM908();
+    //Config_GPRS_SIM908();
     //printf("ATD+84944500186;\r");
-    //GetAccount();    
-    xTaskCreate( vGPSTask, "GPS", mainGPS_TASK_STACK_SIZE, NULL, mainGPS_TASK_PRIORITY, NULL );
-    
+    //GetAccount();        
     vTCP_status = TCP_Connect((char *)IPADDRESS, (char*)PORT);
 
     vTCP_status = TCP_Send("sim908 sending gprs");
+    
+    xTaskCreate( vGPSTask, "GPS", mainGPS_TASK_STACK_SIZE, NULL, mainGPS_TASK_PRIORITY, NULL );
+    
     for( ;; )
     {        
         if(xQueueReceive(SIM908_queue, &vGPSinfo,GPRS_BLOCK_TIME))
         {
-            if(vTCP_status == TCP_SUCCESS)
-            {
-                /*clear buffer here
-                
-                */
                 sprintf(gprs_buffer,"%s,%s",vGPSinfo.latitude,vGPSinfo.longtitude);
-                TCP_Send(gprs_buffer) ;    
-            }
-            else
-            {
-                if(TCP_SUCCESS == TCP_Close())
+                vTCP_status = TCP_Send(gprs_buffer) ;
+                if(vTCP_status != TCP_SUCCESS )
                 {
-                    TCP_Connect((char *)IPADDRESS, (char*)PORT);    
-                }
-                else
-                {
-                    while(TCP_SUCCESS!= TCP_Close());
-                }
-                                
-            }
-            
+                    if(TCP_SUCCESS == TCP_Close())
+                    {
+                        TCP_Connect((char *)IPADDRESS, (char*)PORT);    
+                        TCP_Send(gprs_buffer) ;
+                    }
+                    else
+                    {
+                        while(TCP_SUCCESS!= TCP_Close());
+                    }                    
+                }            
         }
 
     }
