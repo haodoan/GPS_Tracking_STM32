@@ -1,4 +1,3 @@
-#if 1
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -16,7 +15,7 @@
 #include "sim908.h"
 
 extern uart_rtos_handle_t uart2_handle;
-
+SemaphoreHandle_t xMutex;
 /*Get response from SIMCOM after send AT command*/
 uint8_t GetResponse(char *buff_receive, uint32_t timeout)
 {
@@ -54,15 +53,57 @@ int8_t sendATcommand(char *ATcommand, char *expected_answer, unsigned int timeou
 {
     char buffer_response[MAX_LENGH_STR];
     // strcpy(buffdebug,ATcommand);
-    printf("%s\r", ATcommand); // Send the AT command
-    if (pdFALSE == GetResponse(buffer_response, timeout))
+    if( xSemaphoreTake( xMutex, ( TickType_t ) portMAX_DELAY ) == pdTRUE )
     {
-        return pdFALSE;
+        printf("%s\r", ATcommand); // Send the AT command
+        if (pdFALSE == GetResponse(buffer_response, timeout))
+        {
+            xSemaphoreGive( xMutex );
+            return pdFALSE;
+        }
+
+        if (strstr(buffer_response, expected_answer) == NULL)
+        {
+            xSemaphoreGive( xMutex );
+            return pdFALSE;
+        }    
+        xSemaphoreGive( xMutex );
     }
 
-    if (strstr(buffer_response, expected_answer) == NULL)
+    return pdTRUE;
+}
+
+int8_t sendATcommand2(char *ATcommand, char *expected_answer,unsigned int timeout)
+{
+    uint8_t count_char = 0;    
+    TickType_t xtime;
+    signed char SIM_RxChar;
+    char cPassMessage[MAX_LENGH_STR];
+    
+    if( xSemaphoreTake( xMutex, ( TickType_t ) portMAX_DELAY ) == pdTRUE )
     {
-        return pdFALSE;
+        printf("%s\r", ATcommand); // Send the AT command
+        xtime = xTaskGetTickCount();
+        
+        do
+        {        
+            if (pdFALSE != xSerialGetChar(&uart2_handle, &SIM_RxChar,0xffff))
+            {
+                cPassMessage[count_char++] = SIM_RxChar;
+            }
+            if(strstr(cPassMessage,expected_answer))
+            {
+                break;
+            }
+        } while ((xTaskGetTickCount() - xtime < timeout )&&(count_char < MAX_LENGH_STR));
+
+        if (count_char == MAX_LENGH_STR)
+        {
+            xSemaphoreGive( xMutex );
+            return pdFALSE;
+        }
+        cPassMessage[count_char] = '\0';
+        xSemaphoreGive( xMutex );        
     }
     return pdTRUE;
 }
@@ -143,22 +184,21 @@ void Config_GPRS_SIM908(void)
  * Function Name : Tcp_Connect
  * Description   :
  * This function
- *
+ *AT+CIPSTART="TCP","42.115.190.28","8888"
  *END**************************************************************************/
 TCP_STATUS TCP_Connect(char *IP_address, char *Port)
 {
     char command[70];
     memset(command, '\0', 70);
-    sendATcommand("AT+CIPSHUT", "SHUT OK", 30000);
+    sendATcommand("AT+CIPSHUT", "SHUT OK", 5000);
     // delay(2000) ;
     sprintf(command, "AT+CIPSTART=\"TCP\",\"%s\",\"%s\"", IP_address, Port);
-    if (pdTRUE == sendATcommand(command, "CONNECT OK", 60000))
+    if (pdTRUE == sendATcommand2(command,"CONNECT OK", 60000))
     {
         return TCP_SUCCESS;
     }
     return TCP_CONNECT_FAIL;
 }
-
 /*FUNCTION**********************************************************************
  *
  * Function Name : TCP_Send
@@ -246,6 +286,11 @@ void Sim908_setup(void)
     //Sim908_power_on(); // Power up Sim908 module
                 //    delay(10000); // wait
     // SentEnglis_SIMmsg("0944500186","123456");
+    xMutex = xSemaphoreCreateMutex();
+    if( xMutex == NULL )
+    {
+        while(1);
+    }    
     /*****Config Sim908 Module *****************************/
     sendATcommand("ATE0", "OK", 2000);            // off echo
     sendATcommand("AT+CFUN=1", "OK", 2000);       // off echo
@@ -294,4 +339,3 @@ void Sim908_power_on(void)
 
     printf("ATE0\r");
 }
-#endif

@@ -265,8 +265,8 @@ static void vGPSTask( void *pvParameters )
     }
 }
 
-#define IPADDRESS "192.168.15.19"
-#define PORT 1234
+#define IPADDRESS "42.115.190.28"
+#define PORT "8888"
 #define GPRS_BLOCK_TIME  2000
 
 char buff_receive[160];
@@ -280,13 +280,13 @@ static void vGPRSTask( void *pvParameters )
     Sim908_setup();
     //setting gprs for Sim module
     Config_GPRS_SIM908();
- 
-    GetAccount();
-    while(1);
+    //printf("ATD+84944500186;\r");
+    //GetAccount();    
     xTaskCreate( vGPSTask, "GPS", mainGPS_TASK_STACK_SIZE, NULL, mainGPS_TASK_PRIORITY, NULL );
     
     vTCP_status = TCP_Connect((char *)IPADDRESS, (char*)PORT);
 
+    vTCP_status = TCP_Send("sim908 sending gprs");
     for( ;; )
     {        
         if(xQueueReceive(SIM908_queue, &vGPSinfo,GPRS_BLOCK_TIME))
@@ -377,7 +377,7 @@ static void prvSetupHardware( void )
 	/* Configure HCLK clock as SysTick clock source. */
 	SysTick_CLKSourceConfig( SysTick_CLKSource_HCLK );
 	
-	xSerialPortInitMinimal(USART2,&uart2_handle, 115200, 16);
+	xSerialPortInitMinimal(USART2,&uart2_handle, 115200, 64);
 
     /*Initial for led*/
     GPIO_InitStructure.GPIO_Pin = GPIO_Pin_13;

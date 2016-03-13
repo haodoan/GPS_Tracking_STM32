@@ -281,10 +281,12 @@ char cChar;
         {
             USART_ITConfig( USART2, USART_IT_TXE, DISABLE );        
         }       
+        USART_ClearFlag(USART2, USART_FLAG_TXE);
     }
     
     if( USART_GetITStatus(USART2, USART_IT_RXNE ) == SET )
     {
+        USART_ClearFlag(USART2, USART_FLAG_RXNE);
         cChar = USART_ReceiveData(USART2 );
         xQueueSendFromISR( uart2_handle.xRxedChars, &cChar, &xHigherPriorityTaskWoken );
     }   
