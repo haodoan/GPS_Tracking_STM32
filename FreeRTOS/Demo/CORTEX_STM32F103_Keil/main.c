@@ -114,7 +114,7 @@
 /* Demo app includes. */
 #include "serial.h"
 #include "sim908.h"
-
+#include "lcd_nokia5110/nokia_5110.h"
 /* Task priorities. */
 #define mainGPS_TASK_PRIORITY				( tskIDLE_PRIORITY + 3 )
 #define mainGPRS_TASK_PRIORITY              ( tskIDLE_PRIORITY + 4 )
@@ -192,6 +192,9 @@ int main( void )
 //	vStartLEDFlashTasks( mainFLASH_TASK_PRIORITY );
 //	vAltStartComTestTasks( mainCOM_TEST_PRIORITY, mainCOM_TEST_BAUD_RATE, mainCOM_TEST_LED );
 
+    LCD_init();
+    LCD_clear();
+    LCD_write_english_string(0,0,"SIM908 -> GSM GPRS GPS PRO");
     SIM908_queue = xQueueCreate( 10, sizeof(GPS_INFO));
     if(SIM908_queue == NULL)
     {
@@ -335,8 +338,8 @@ static void prvSetupHardware( void )
     /* PCLK1 = HCLK/2 */
     RCC_PCLK1Config( RCC_HCLK_Div2 );
 
-    /* PLLCLK = 8MHz * 9 = 72 MHz. */
-    RCC_PLLConfig( RCC_PLLSource_HSE_Div1, RCC_PLLMul_9 );
+    /* PLLCLK = 12MHz * 6 = 72 MHz. */
+    RCC_PLLConfig( RCC_PLLSource_HSE_Div1, RCC_PLLMul_6 );
 
     /* Enable PLL. */
     RCC_PLLCmd( ENABLE );
@@ -359,7 +362,7 @@ static void prvSetupHardware( void )
 							| RCC_APB2Periph_AFIO, ENABLE );
 
 	/* SPI2 Periph clock enable */
-	RCC_APB1PeriphClockCmd( RCC_APB1Periph_SPI2, ENABLE );
+	//RCC_APB1PeriphClockCmd( RCC_APB1Periph_SPI2, ENABLE );
 
 
 	/* Set the Vector Table base address at 0x08000000 */
@@ -372,11 +375,22 @@ static void prvSetupHardware( void )
 	
 	xSerialPortInitMinimal(USART2,&uart2_handle, 115200, 64);
 
-    /*Initial for led*/
-    GPIO_InitStructure.GPIO_Pin = GPIO_Pin_13;
+    GPIO_InitStructure.GPIO_Pin = GPIO_Pin_12|GPIO_Pin_11|GPIO_Pin_5|GPIO_Pin_7;
+    GPIO_InitStructure.GPIO_Speed = GPIO_Speed_50MHz;
+    GPIO_InitStructure.GPIO_Mode = GPIO_Mode_Out_PP;
+    GPIO_Init(GPIOA, &GPIO_InitStructure);
+    
+    /*Initial for led and BL*/
+    GPIO_InitStructure.GPIO_Pin = GPIO_Pin_7|GPIO_Pin_8;
     GPIO_InitStructure.GPIO_Speed = GPIO_Speed_50MHz;
     GPIO_InitStructure.GPIO_Mode = GPIO_Mode_Out_PP;
     GPIO_Init( GPIOC, &GPIO_InitStructure );    
+    
+    /*Initial for PWKEY*/
+    GPIO_InitStructure.GPIO_Pin = GPIO_Pin_0;
+    GPIO_InitStructure.GPIO_Speed = GPIO_Speed_50MHz;
+    GPIO_InitStructure.GPIO_Mode = GPIO_Mode_Out_PP;
+    GPIO_Init( GPIOB, &GPIO_InitStructure );   
 	//vParTestInitialise();
 }
 /*-----------------------------------------------------------*/

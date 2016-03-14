@@ -21,8 +21,8 @@ typedef struct gps_info_t
 	char date[20];
 }GPS_INFO;
 #define MAX_LENGH_STR  100
-#define SIM908_PWRON   GPIO_WriteBit(GPIOA, GPIO_Pin_0, Bit_SET)
-#define SIM908_PWROFF  GPIO_WriteBit(GPIOA, GPIO_Pin_0, Bit_RESET)
+#define SIM908_PWRON   GPIO_WriteBit(GPIOB, GPIO_Pin_0, Bit_SET)
+#define SIM908_PWROFF  GPIO_WriteBit(GPIOB, GPIO_Pin_0, Bit_RESET)
 #define delay_ms(x)    vTaskDelay(x)
 
 uint8_t GetResponse(char *buff_receive, uint32_t timeout);

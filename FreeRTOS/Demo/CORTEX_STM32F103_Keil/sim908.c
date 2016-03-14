@@ -283,14 +283,13 @@ uint8_t GetAccount()
 }
 void Sim908_setup(void)
 {
-    //Sim908_power_on(); // Power up Sim908 module
-                //    delay(10000); // wait
-    // SentEnglis_SIMmsg("0944500186","123456");
+
     xMutex = xSemaphoreCreateMutex();
     if( xMutex == NULL )
     {
         while(1);
     }    
+    Sim908_power_on(); // Power up Sim908 module
     /*****Config Sim908 Module *****************************/
     sendATcommand("ATE0", "OK", 2000);            // off echo
     sendATcommand("AT+CFUN=1", "OK", 2000);       // off echo
@@ -326,7 +325,7 @@ void Sim908_setup(void)
 void Sim908_power_on(void)
 {
 
-    if (pdTRUE == sendATcommand("AT", "OK", 2000))
+    if (pdFALSE == sendATcommand("AT", "OK", 2000))
     { // power on pulse
         SIM908_PWRON;
         delay_ms(3000);

@@ -189,7 +189,8 @@ void GPIO_EventOutputConfig(u8 GPIO_PortSource, u8 GPIO_PinSource);
 void GPIO_EventOutputCmd(FunctionalState NewState);
 void GPIO_PinRemapConfig(u32 GPIO_Remap, FunctionalState NewState);
 void GPIO_EXTILineConfig(u8 GPIO_PortSource, u8 GPIO_PinSource);
-
+void GPIO_SetBits(GPIO_TypeDef* GPIOx, u16 GPIO_Pin);
+void GPIO_ReSetBits(GPIO_TypeDef* GPIOx, u16 GPIO_Pin);
 #endif /* __STM32F10x_GPIO_H */
 
 /******************* (C) COPYRIGHT 2007 STMicroelectronics *****END OF FILE****/

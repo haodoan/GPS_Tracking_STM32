@@ -92,7 +92,7 @@
 #define FLAG_Mask                 ((u8)0x1F)
 
 /* Typical Value of the HSI in Hz */
-#define HSI_Value                 ((u32)8000000)
+#define HSI_Value                 ((u32)12000000)
 
 /* BDCR register base address */
 #define BDCR_BASE                 (PERIPH_BASE + BDCR_OFFSET)

@@ -12,16 +12,16 @@
       <ToolsetName>ARM-ADS</ToolsetName>
       <TargetOption>
         <TargetCommonOption>
-          <Device>STM32F103C8</Device>
+          <Device>STM32F103RB</Device>
           <Vendor>STMicroelectronics</Vendor>
           <PackID>Keil.STM32F1xx_DFP.2.0.0</PackID>
           <PackURL>http://www.keil.com/pack/</PackURL>
-          <Cpu>IROM(0x08000000,0x10000) IRAM(0x20000000,0x5000) CPUTYPE("Cortex-M3") CLOCK(12000000) ELITTLE</Cpu>
+          <Cpu>IROM(0x08000000,0x20000) IRAM(0x20000000,0x5000) CPUTYPE("Cortex-M3") CLOCK(12000000) ELITTLE</Cpu>
           <FlashUtilSpec></FlashUtilSpec>
           <StartupFile></StartupFile>
-          <FlashDriverDll>UL2CM3(-S0 -C0 -P0 -FD20000000 -FC1000 -FN1 -FF0STM32F10x_128 -FS08000000 -FL020000 -FP0($$Device:STM32F103C8$Flash/STM32F10x_128.FLM))</FlashDriverDll>
+          <FlashDriverDll>UL2CM3(-S0 -C0 -P0 -FD20000000 -FC1000 -FN1 -FF0STM32F10x_128 -FS08000000 -FL020000 -FP0($$Device:STM32F103RB$Flash/STM32F10x_128.FLM))</FlashDriverDll>
           <DeviceId>0</DeviceId>
-          <RegisterFile>$$Device:STM32F103C8$Device/Include/stm32f10x.h</RegisterFile>
+          <RegisterFile>$$Device:STM32F103RB$Device/Include/stm32f10x.h</RegisterFile>
           <MemoryEnv></MemoryEnv>
           <Cmp></Cmp>
           <Asm></Asm>
@@ -31,7 +31,7 @@
           <SLE66CMisc></SLE66CMisc>
           <SLE66AMisc></SLE66AMisc>
           <SLE66LinkerMisc></SLE66LinkerMisc>
-          <SFDFile>$$Device:STM32F103C8$SVD\STM32F103xx.svd</SFDFile>
+          <SFDFile>$$Device:STM32F103RB$SVD\STM32F103xx.svd</SFDFile>
           <bCustSvd>0</bCustSvd>
           <UseEnv>0</UseEnv>
           <BinPath></BinPath>
@@ -171,11 +171,11 @@
             <RunIndependent>0</RunIndependent>
             <UpdateFlashBeforeDebugging>1</UpdateFlashBeforeDebugging>
             <Capability>1</Capability>
-            <DriverSelection>4097</DriverSelection>
+            <DriverSelection>4096</DriverSelection>
           </Flash1>
           <bUseTDR>1</bUseTDR>
           <Flash2>BIN\UL2CM3.DLL</Flash2>
-          <Flash3></Flash3>
+          <Flash3>"" ()</Flash3>
           <Flash4></Flash4>
           <pFcarmOut></pFcarmOut>
           <pFcarmGrp></pFcarmGrp>
@@ -285,7 +285,7 @@
               <IROM>
                 <Type>1</Type>
                 <StartAddress>0x8000000</StartAddress>
-                <Size>0x10000</Size>
+                <Size>0x20000</Size>
               </IROM>
               <XRAM>
                 <Type>0</Type>
@@ -310,7 +310,7 @@
               <OCR_RVCT4>
                 <Type>1</Type>
                 <StartAddress>0x8000000</StartAddress>
-                <Size>0x10000</Size>
+                <Size>0x20000</Size>
               </OCR_RVCT4>
               <OCR_RVCT5>
                 <Type>1</Type>
@@ -409,11 +409,6 @@
           <GroupName>System</GroupName>
           <Files>
             <File>
-              <FileName>sim908.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>.\sim908.c</FilePath>
-            </File>
-            <File>
               <FileName>STM32F10x.s</FileName>
               <FileType>2</FileType>
               <FilePath>.\STM32F10x.s</FilePath>
@@ -474,6 +469,11 @@
           <GroupName>Demo Files</GroupName>
           <Files>
             <File>
+              <FileName>sim908.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>.\sim908.c</FilePath>
+            </File>
+            <File>
               <FileName>ParTest.c</FileName>
               <FileType>1</FileType>
               <FilePath>.\ParTest\ParTest.c</FilePath>
@@ -532,6 +532,11 @@
               <FileName>PollQ.c</FileName>
               <FileType>1</FileType>
               <FilePath>..\Common\Minimal\PollQ.c</FilePath>
+            </File>
+            <File>
+              <FileName>nokia_5110.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>.\lcd_nokia5110\nokia_5110.c</FilePath>
             </File>
           </Files>
         </Group>

@@ -343,6 +343,33 @@ void GPIO_Write(GPIO_TypeDef* GPIOx, u16 PortVal)
   GPIOx->ODR = PortVal;
 }
 
+/**
+  * @brief  Sets the selected data port bits.
+  * @param  GPIOx: where x can be (A..G) to select the GPIO peripheral.
+  * @param  GPIO_Pin: specifies the port bits to be written.
+  *   This parameter can be any combination of GPIO_Pin_x where x can be (0..15).
+  * @retval None
+  */
+void GPIO_SetBits(GPIO_TypeDef* GPIOx, u16 GPIO_Pin)
+{
+  /* Check the parameters */
+  
+  GPIOx->BSRR = GPIO_Pin;
+}
+
+/**
+  * @brief  Clears the selected data port bits.
+  * @param  GPIOx: where x can be (A..G) to select the GPIO peripheral.
+  * @param  GPIO_Pin: specifies the port bits to be written.
+  *   This parameter can be any combination of GPIO_Pin_x where x can be (0..15).
+  * @retval None
+  */
+void GPIO_ResetBits(GPIO_TypeDef* GPIOx, u16 GPIO_Pin)
+{    
+  GPIOx->BRR = GPIO_Pin;
+}
+
+
 /*******************************************************************************
 * Function Name  : GPIO_PinLockConfig
 * Description    : Locks GPIO Pins configuration registers.
