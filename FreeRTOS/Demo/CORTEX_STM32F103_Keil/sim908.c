@@ -19,15 +19,15 @@ SemaphoreHandle_t xMutex;
 /*Get response from SIMCOM after send AT command*/
 uint8_t GetResponse(char *buff_receive, uint32_t timeout)
 {
-    uint8_t count_char = 0;    
+    uint8_t count_char = 0;
     TickType_t xtime;
     signed char SIM_RxChar;
     char cPassMessage[MAX_LENGH_STR];
-    
+
     xtime = xTaskGetTickCount();
-    
+
     do
-    {        
+    {
         if (pdFALSE != xSerialGetChar(&uart2_handle, &SIM_RxChar, 10))
         {
             cPassMessage[count_char++] = SIM_RxChar;
@@ -36,7 +36,7 @@ uint8_t GetResponse(char *buff_receive, uint32_t timeout)
         {
             if((SIM_RxChar == 0xA) && (cPassMessage[count_char -2] == 0xD) && (count_char >= 2))
                 break;
-        }      
+        }
     } while ((xTaskGetTickCount() - xtime < timeout )&&(count_char < MAX_LENGH_STR));
 
     if (count_char == MAX_LENGH_STR)
@@ -45,7 +45,7 @@ uint8_t GetResponse(char *buff_receive, uint32_t timeout)
     }
     cPassMessage[count_char] = '\0';
     strcpy(buff_receive, cPassMessage);
-    
+
     return pdTRUE;
 }
 
@@ -66,7 +66,7 @@ int8_t sendATcommand(char *ATcommand, char *expected_answer, unsigned int timeou
         {
             xSemaphoreGive( xMutex );
             return pdFALSE;
-        }    
+        }
         xSemaphoreGive( xMutex );
     }
 
@@ -75,18 +75,18 @@ int8_t sendATcommand(char *ATcommand, char *expected_answer, unsigned int timeou
 
 int8_t sendATcommand2(char *ATcommand, char *expected_answer,unsigned int timeout)
 {
-    uint8_t count_char = 0;    
+    uint8_t count_char = 0;
     TickType_t xtime;
     signed char SIM_RxChar;
     char cPassMessage[MAX_LENGH_STR];
-    
+
     if( xSemaphoreTake( xMutex, ( TickType_t ) portMAX_DELAY ) == pdTRUE )
     {
         printf("%s\r", ATcommand); // Send the AT command
         xtime = xTaskGetTickCount();
-        
+
         do
-        {        
+        {
             if (pdFALSE != xSerialGetChar(&uart2_handle, &SIM_RxChar,0xffff))
             {
                 cPassMessage[count_char++] = SIM_RxChar;
@@ -103,7 +103,7 @@ int8_t sendATcommand2(char *ATcommand, char *expected_answer,unsigned int timeou
             return pdFALSE;
         }
         cPassMessage[count_char] = '\0';
-        xSemaphoreGive( xMutex );        
+        xSemaphoreGive( xMutex );
     }
     return pdTRUE;
 }
@@ -111,7 +111,7 @@ int8_t sendATcommand2(char *ATcommand, char *expected_answer,unsigned int timeou
 uint8_t GPS_PWR()
 {
    // Power up GPS
-     sendATcommand("AT+CGPSPWR=1", "OK", 2000);    
+     sendATcommand("AT+CGPSPWR=1", "OK", 2000);
     // Reset GPS Hot m0de
      sendATcommand("AT+CGPSRST=1", "OK", 2000);
      return pdTRUE;
@@ -145,7 +145,7 @@ BaseType_t Wait_GPS_Fix(void)
  *
  *END**************************************************************************/
 uint8_t get_GPS(GPS_INFO *vGPSinfo)
-{   
+{
     char buffer_response[MAX_LENGH_STR];
     //GPS_INFO vGPSinfo;
     // First get the NMEA string
@@ -269,7 +269,7 @@ uint8_t GetAccount()
         do {
             if (pdFALSE != xSerialGetChar(&uart2_handle, &SIM_RxChar, 0xffff))
             {
-                *(ptr_buff++) = SIM_RxChar;            
+                *(ptr_buff++) = SIM_RxChar;
                 cnt++;
             }
             if((*(ptr_buff - 2)==0xD) && (SIM_RxChar ==0xA) && (cnt > 2))
@@ -288,7 +288,7 @@ void Sim908_setup(void)
     if( xMutex == NULL )
     {
         while(1);
-    }    
+    }
     Sim908_power_on(); // Power up Sim908 module
     /*****Config Sim908 Module *****************************/
     sendATcommand("ATE0", "OK", 2000);            // off echo
@@ -337,4 +337,33 @@ void Sim908_power_on(void)
     }
 
     printf("ATE0\r");
+}
+
+void GetCmdDataSIM(char *str , char DATA_AT[5][10])
+{
+    char * pch;
+    int i=0;
+    pch = strtok (str,":");
+
+    while (pch != NULL)
+    {
+        pch = strtok(NULL,",\"\r\n");
+        strcpy(DATA_AT[i++],pch);
+        if(i == 5) break;
+    }
+}
+
+/*Get Cell ID*/
+void GetCellid(GPS_INFO  *info_cellid ;)
+{
+    char DATA_AT[5][10] ;
+    memset(DATA_AT , '\0' , 50);
+    printf("AT+CREG?\r");
+    if(GetResponse("+CREG:", 2000))
+    {
+        GetCmdDataSIM(uart_data.buff ,DATA_AT);
+        strcpy(info_cellid->LAC,strtok (DATA_AT[2],"\""));
+        strcpy(info_cellid->CELLID ,strtok (DATA_AT[3],"\""));
+    }
+    return info_cellid ;
 }

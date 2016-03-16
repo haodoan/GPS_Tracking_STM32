@@ -19,6 +19,8 @@ typedef struct gps_info_t
 	char latitude[20];
 	char longtitude[20];
 	char date[20];
+    char LAC[5];
+    char CELLID[5];
 }GPS_INFO;
 #define MAX_LENGH_STR  100
 #define SIM908_PWRON   GPIO_WriteBit(GPIOB, GPIO_Pin_0, Bit_SET)
@@ -38,3 +40,5 @@ void Sim908_setup(void);
 void Sim908_power_on(void);
 uint8_t GPS_PWR(void);
 uint8_t GetAccount(void);
+void GetCellid(GPS_INFO  *info_cellid );
+void GetCmdDataSIM(char *str , char DATA_AT[5][10]);

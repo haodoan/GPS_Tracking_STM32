@@ -126,6 +126,13 @@
 /* The time between cycles of the 'check' task. */
 #define mainGPS_DELAY						( ( TickType_t ) 5000 / portTICK_PERIOD_MS )
 #define mainLED_BLINK_DELAY				    (500)
+
+#define GPRS_HEAD_CMD   "????"
+#define GPRS_END_CMD    "$$$$"
+
+#define IP_SERVER "42.115.190.28"
+#define PORT "8888"
+#define GPRS_BLOCK_TIME  2000
 /*-----------------------------------------------------------*/
 
 /*
@@ -182,7 +189,7 @@ int main( void )
 	prvSetupHardware();
 
 	/* Create the queue used by the LCD task.  Messages for display on the LCD
-	are received via t878 nnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnhjuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuunh8    jnhhhhhhhhhhhhhhhhhhhyunhjuuuuuuuuuuuuuuuuuuuuuuuuu  queue         ././.;p/////////////////////////////////////////////////////////////////his queue. */	
+	are received via t878 nnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnhjuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuunh8    jnhhhhhhhhhhhhhhhhhhhyunhjuuuuuuuuuuuuuuuuuuuuuuuuu  queue         ././.;p/////////////////////////////////////////////////////////////////his queue. */
 	/* Start the standard demo tasks. */
 //	vStartBlockingQueueTasks( mainBLOCK_Q_PRIORITY );
 //	vCreateBlockTimeTasks();
@@ -194,7 +201,7 @@ int main( void )
 
     LCD_init();
     LCD_clear();
-    LCD_write_english_string(0,0,"SIM908 -> GSM GPRS GPS PRO");
+    LCD_write_string(0,3,"GPS Tracking...");
     SIM908_queue = xQueueCreate( 10, sizeof(GPS_INFO));
     if(SIM908_queue == NULL)
     {
@@ -230,7 +237,7 @@ void vLEDTask( void *pvParameters )
 	/* Initialise the LCD and display a startup message. */
 //	prvConfigureLCD();
 	//LCD_DrawMonoPict( ( unsigned long * ) pcBitmap );
-	//printf("vLED blink\r");  
+	//printf("vLED blink\r");
 
 
 	for( ;; )
@@ -258,23 +265,23 @@ static void vGPSTask( void *pvParameters )
         if(pdTRUE == Wait_GPS_Fix())
         {
             get_GPS(&vGPSinfo);
-            if( xQueueSend(SIM908_queue, &vGPSinfo, GPS_BLOCK_TIME ) != pdPASS )
-            {
-
-            }            
         }
-        TCP_Send("GPS ...\r");
+        else // get cell id
+        {
+            GetCellid(&vGPSinfo);
+        }
+        if( xQueueSend(SIM908_queue, &vGPSinfo, GPS_BLOCK_TIME ) != pdPASS )
+        {
+            error_lcd_printf();
+        }
+
         vTaskDelay(1000);
     }
 }
 
-#define IPADDRESS "42.115.190.28"
-#define PORT "8888"
-#define GPRS_BLOCK_TIME  2000
-
 static void vGPRSTask( void *pvParameters )
 {
-    
+
     GPS_INFO vGPSinfo;
     TCP_STATUS vTCP_status;
     char gprs_buffer[200] = {0};
@@ -283,31 +290,30 @@ static void vGPRSTask( void *pvParameters )
     //setting gprs for Sim module
     //Config_GPRS_SIM908();
     //printf("ATD+84944500186;\r");
-    //GetAccount();        
-    vTCP_status = TCP_Connect((char *)IPADDRESS, (char*)PORT);
-
+    vTCP_status = TCP_Connect((char *)IP_SERVER, (char*)PORT);
+    (vTCP_status == TCP_SUCCESS)?LCD_write_string(0,3,"Connect OK..."):LCD_write_string(0,3,"Connect FAIL")
     vTCP_status = TCP_Send("sim908 sending gprs");
-    
+    (vTCP_status == TCP_SUCCESS)?LCD_write_string(0,3,"Send OK..."):LCD_write_string(0,3,"Send FAIL....")
     xTaskCreate( vGPSTask, "GPS", mainGPS_TASK_STACK_SIZE, NULL, mainGPS_TASK_PRIORITY, NULL );
-    
+
     for( ;; )
-    {        
+    {
         if(xQueueReceive(SIM908_queue, &vGPSinfo,GPRS_BLOCK_TIME))
         {
-                sprintf(gprs_buffer,"%s,%s",vGPSinfo.latitude,vGPSinfo.longtitude);
+                sprintf(gprs_buffer,"%s,%s,%s,%s",GPRS_HEAD_CMD,GPRS_END_CMD,vGPSinfo.latitude,vGPSinfo.longtitude);
                 vTCP_status = TCP_Send(gprs_buffer) ;
                 if(vTCP_status != TCP_SUCCESS )
                 {
                     if(TCP_SUCCESS == TCP_Close())
                     {
-                        TCP_Connect((char *)IPADDRESS, (char*)PORT);    
+                        TCP_Connect((char *)IP_SERVER, (char*)PORT);
                         TCP_Send(gprs_buffer) ;
                     }
                     else
                     {
                         while(TCP_SUCCESS!= TCP_Close());
-                    }                    
-                }            
+                    }
+                }
         }
 
     }
@@ -317,7 +323,7 @@ static void vGPRSTask( void *pvParameters )
 static void prvSetupHardware( void )
 {
     GPIO_InitTypeDef GPIO_InitStructure;
-    
+
     /* Enable HSE (high speed external clock). */
     RCC_HSEConfig( RCC_HSE_ON );
 
@@ -372,35 +378,40 @@ static void prvSetupHardware( void )
 
 	/* Configure HCLK clock as SysTick clock source. */
 	SysTick_CLKSourceConfig( SysTick_CLKSource_HCLK );
-	
+
 	xSerialPortInitMinimal(USART2,&uart2_handle, 115200, 64);
 
     GPIO_InitStructure.GPIO_Pin = GPIO_Pin_12|GPIO_Pin_11|GPIO_Pin_5|GPIO_Pin_7;
     GPIO_InitStructure.GPIO_Speed = GPIO_Speed_50MHz;
     GPIO_InitStructure.GPIO_Mode = GPIO_Mode_Out_PP;
     GPIO_Init(GPIOA, &GPIO_InitStructure);
-    
+
     /*Initial for led and BL*/
     GPIO_InitStructure.GPIO_Pin = GPIO_Pin_7|GPIO_Pin_8;
     GPIO_InitStructure.GPIO_Speed = GPIO_Speed_50MHz;
     GPIO_InitStructure.GPIO_Mode = GPIO_Mode_Out_PP;
-    GPIO_Init( GPIOC, &GPIO_InitStructure );    
-    
+    GPIO_Init( GPIOC, &GPIO_InitStructure );
+
     /*Initial for PWKEY*/
     GPIO_InitStructure.GPIO_Pin = GPIO_Pin_0;
     GPIO_InitStructure.GPIO_Speed = GPIO_Speed_50MHz;
     GPIO_InitStructure.GPIO_Mode = GPIO_Mode_Out_PP;
-    GPIO_Init( GPIOB, &GPIO_InitStructure );   
+    GPIO_Init( GPIOB, &GPIO_InitStructure );
 	//vParTestInitialise();
 }
 /*-----------------------------------------------------------*/
 
+void  error_lcd_printf()
+{
+    LCD_write_string(0,3,"FAIL...");
+    while(TRUE);
+}
 int fputc( int ch, FILE *f )
 {
   /* Place your implementation of fputc here */
   /* e.g. write a character to the USART */
 	xSerialPutChar(&uart2_handle, ch, 1000);
-	
+
 	return ch;
 }
 /*-----------------------------------------------------------*/
