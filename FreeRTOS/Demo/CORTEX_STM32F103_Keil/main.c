@@ -172,7 +172,8 @@ static void vGPRSTask( void *pvParameters );
  * described at the top of this file.
  */
 extern void vSetupTimerTest( void );
-
+void  error_lcd_printf();
+    
 /*handler for using USART*/
 extern uart_rtos_handle_t uart1_handle;
 extern uart_rtos_handle_t uart2_handle;
@@ -201,7 +202,7 @@ int main( void )
 
     LCD_init();
     LCD_clear();
-    LCD_write_string(0,3,"GPS Tracking...");
+    LCD_write_string(0,3,"GPS Tracking..");
     SIM908_queue = xQueueCreate( 10, sizeof(GPS_INFO));
     if(SIM908_queue == NULL)
     {
@@ -275,7 +276,7 @@ static void vGPSTask( void *pvParameters )
             error_lcd_printf();
         }
 
-        vTaskDelay(1000);
+        vTaskDelay(2000);
     }
 }
 
@@ -285,23 +286,36 @@ static void vGPRSTask( void *pvParameters )
     GPS_INFO vGPSinfo;
     TCP_STATUS vTCP_status;
     char gprs_buffer[200] = {0};
+    uint16_t lcd_cnt = 0;
     //Set up sim908
     Sim908_setup();
     //setting gprs for Sim module
     //Config_GPRS_SIM908();
     //printf("ATD+84944500186;\r");
+    LCD_write_string(0,3,"Connectting...");
     vTCP_status = TCP_Connect((char *)IP_SERVER, (char*)PORT);
-    (vTCP_status == TCP_SUCCESS)?LCD_write_string(0,3,"Connect OK..."):LCD_write_string(0,3,"Connect FAIL")
+    (vTCP_status == TCP_SUCCESS)?LCD_write_string(0,3,"Connect OK..."):LCD_write_string(0,3,"Connect FAIL");
     vTCP_status = TCP_Send("sim908 sending gprs");
-    (vTCP_status == TCP_SUCCESS)?LCD_write_string(0,3,"Send OK..."):LCD_write_string(0,3,"Send FAIL....")
+    (vTCP_status == TCP_SUCCESS)?LCD_write_string(0,3,"Send OK..."):LCD_write_string(0,3,"Send FAIL....");
     xTaskCreate( vGPSTask, "GPS", mainGPS_TASK_STACK_SIZE, NULL, mainGPS_TASK_PRIORITY, NULL );
 
     for( ;; )
     {
         if(xQueueReceive(SIM908_queue, &vGPSinfo,GPRS_BLOCK_TIME))
         {
-                sprintf(gprs_buffer,"%s,%s,%s,%s",GPRS_HEAD_CMD,GPRS_END_CMD,vGPSinfo.latitude,vGPSinfo.longtitude);
+                sprintf(gprs_buffer,"%s,%s,%s,%s\r\n",GPRS_HEAD_CMD,vGPSinfo.latitude,vGPSinfo.longtitude,GPRS_END_CMD);
                 vTCP_status = TCP_Send(gprs_buffer) ;
+                if(vTCP_status == TCP_SUCCESS)
+                {
+                    char lcd_buff_out[20];
+                    sprintf(lcd_buff_out,"Send OK : %d",lcd_cnt++);
+                    LCD_write_string(0,3,lcd_buff_out);
+                    
+                }
+                else
+                {
+                    LCD_write_string(0,3,"Send FAIL");
+                }
                 if(vTCP_status != TCP_SUCCESS )
                 {
                     if(TCP_SUCCESS == TCP_Close())

@@ -76,7 +76,7 @@ int8_t sendATcommand(char *ATcommand, char *expected_answer, unsigned int timeou
 int8_t sendATcommand2(char *ATcommand, char *expected_answer,unsigned int timeout)
 {
     uint8_t count_char = 0;
-    TickType_t xtime;
+    TickType_t xtime ,test;
     signed char SIM_RxChar;
     char cPassMessage[MAX_LENGH_STR];
 
@@ -97,7 +97,7 @@ int8_t sendATcommand2(char *ATcommand, char *expected_answer,unsigned int timeou
             }
         } while ((xTaskGetTickCount() - xtime < timeout )&&(count_char < MAX_LENGH_STR));
 
-        if (count_char == MAX_LENGH_STR)
+        if ((count_char == MAX_LENGH_STR) || (xTaskGetTickCount() >= xtime + timeout))  
         {
             xSemaphoreGive( xMutex );
             return pdFALSE;
@@ -111,9 +111,9 @@ int8_t sendATcommand2(char *ATcommand, char *expected_answer,unsigned int timeou
 uint8_t GPS_PWR()
 {
    // Power up GPS
-     sendATcommand("AT+CGPSPWR=1", "OK", 2000);
+     sendATcommand2("AT+CGPSPWR=1", "OK", 2000);
     // Reset GPS Hot m0de
-     sendATcommand("AT+CGPSRST=1", "OK", 2000);
+     sendATcommand2("AT+CGPSRST=1", "OK", 2000);
      return pdTRUE;
 }
 /*FUNCTION**********************************************************************
@@ -126,8 +126,8 @@ uint8_t GPS_PWR()
 BaseType_t Wait_GPS_Fix(void)
 {
     // waits for fix GPS
-    if ((pdTRUE == sendATcommand("AT+CGPSSTATUS?", "Location 2D Fix", 2000)) ||
-        (pdTRUE == sendATcommand("AT+CGPSSTATUS?", "Location 3D Fix", 2000)))
+    if ((pdTRUE == sendATcommand2("AT+CGPSSTATUS?", "3D Fix", 2000)) ||
+        (pdTRUE == sendATcommand2("AT+CGPSSTATUS?", "2D Fix", 2000)))
     {
         return pdTRUE;
     }
@@ -267,7 +267,7 @@ uint8_t GetAccount()
     if (sendATcommand("AT+CUSD=1,\"*101#\"", "OK", 2000))
     {
         do {
-            if (pdFALSE != xSerialGetChar(&uart2_handle, &SIM_RxChar, 0xffff))
+            if (pdFALSE != xSerialGetChar(&uart2_handle, (signed char*)&SIM_RxChar, 0xffff))
             {
                 *(ptr_buff++) = SIM_RxChar;
                 cnt++;
@@ -298,10 +298,10 @@ void Sim908_setup(void)
     sendATcommand("AT+CMGF=1", "OK", 2000);
     // GPIO_WriteLow(DTR_GPIO_PORT, (GPIO_Pin_TypeDef)DTR_GPIO_PINS); //wake up
     // Power up GPS
-    sendATcommand("AT+CGPSPWR=1", "OK", 2000); // power up gps
+    //sendATcommand("AT+CGPSPWR=1", "OK", 2000); // power up gps
     // Reset GPS Cold mde
-    sendATcommand("AT+CGPSRST=1", "OK", 2000);
-    sendATcommand("AT+CREG=2", "OK", 2000);
+    //sendATcommand("AT+CGPSRST=1", "OK", 2000);
+    //sendATcommand("AT+CREG=2", "OK", 2000);
     /************End Config Sim908 Module *****************************/
     // delay(1000);
     while (sendATcommand("AT+CREG?", "+CREG: 2,1", 2000) == pdFALSE);
@@ -354,16 +354,16 @@ void GetCmdDataSIM(char *str , char DATA_AT[5][10])
 }
 
 /*Get Cell ID*/
-void GetCellid(GPS_INFO  *info_cellid ;)
+void GetCellid(GPS_INFO  *info_cellid)
 {
     char DATA_AT[5][10] ;
+    char buff[30];
     memset(DATA_AT , '\0' , 50);
     printf("AT+CREG?\r");
-    if(GetResponse("+CREG:", 2000))
+    if(GetResponse(buff, 2000))
     {
-        GetCmdDataSIM(uart_data.buff ,DATA_AT);
+        GetCmdDataSIM(buff ,DATA_AT);
         strcpy(info_cellid->LAC,strtok (DATA_AT[2],"\""));
         strcpy(info_cellid->CELLID ,strtok (DATA_AT[3],"\""));
     }
-    return info_cellid ;
 }
