@@ -76,6 +76,7 @@ int8_t sendATcommand(char *ATcommand, char *expected_answer, unsigned int timeou
 int8_t sendATcommand2(char *ATcommand, char *expected_answer,unsigned int timeout)
 {
     uint8_t count_char = 0;
+    uint8_t error = pdTRUE;
     signed char SIM_RxChar;
     char cPassMessage[MAX_LENGH_STR];
 
@@ -88,13 +89,18 @@ int8_t sendATcommand2(char *ATcommand, char *expected_answer,unsigned int timeou
             {
                 cPassMessage[count_char++] = SIM_RxChar;
             }
+            else
+            {
+                error = pdFAIL;
+                break;
+            }
             if(strstr(cPassMessage,expected_answer))
             {
                 break;
             }
         } while (count_char < MAX_LENGH_STR);
 
-        if (count_char == MAX_LENGH_STR)
+        if ((count_char == MAX_LENGH_STR) || (error == pdFAIL))
         {
             xSemaphoreGive( xMutex );
             return pdFALSE;
@@ -240,7 +246,7 @@ TCP_STATUS TCP_GetStatus(void)
 
     if (pdTRUE == sendATcommand2("AT+CIPSTATUS", "CONNECT OK", 20000))
     {
-        return TCP_CONNECT_SUCCESS
+        return TCP_CONNECT_SUCCESS;
     }
     else
     {
@@ -386,7 +392,8 @@ void GetCellid(GPS_INFO  *info_cellid )
  *END**************************************************************************/
 uint8_t GetIMEI(char * imei)
 {
-
+    char buff[20];
+    
     printf("AT+GSN\r");
 
     if(GetResponse(buff, 2000))

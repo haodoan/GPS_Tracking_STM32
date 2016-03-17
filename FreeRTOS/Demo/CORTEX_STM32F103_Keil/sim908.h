@@ -49,6 +49,6 @@ void Sim908_setup(void);
 void Sim908_power_on(void);
 uint8_t GPS_PWR(void);
 uint8_t GetAccount(void);
-void GetIMEI(char * imei);
 void GetCellid(GPS_INFO  *info_cellid );
 void GetCmdDataSIM(char *str , char DATA_AT[5][10]);
+uint8_t GetIMEI(char * imei);
