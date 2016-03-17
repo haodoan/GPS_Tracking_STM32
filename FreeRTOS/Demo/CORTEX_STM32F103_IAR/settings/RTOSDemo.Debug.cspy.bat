@@ -25,7 +25,7 @@ if not "%~1" == "" goto debugFile
 
 @echo on 
 
-"D:\Install Program\IAR Systems\Embedded Workbench 7.2\common\bin\cspybat" -f "D:\Setup\FreeRTOS\FreeRTOSV8.2.3\FreeRTOS\Demo\CORTEX_STM32F103_IAR\settings\RTOSDemo.Debug.general.xcl" --backend -f "D:\Setup\FreeRTOS\FreeRTOSV8.2.3\FreeRTOS\Demo\CORTEX_STM32F103_IAR\settings\RTOSDemo.Debug.driver.xcl" 
+"D:\Install Program\IAR Systems\common\bin\cspybat" -f "D:\STM32\GIT\GPS_Tracking_STM32\FreeRTOS\Demo\CORTEX_STM32F103_IAR\settings\RTOSDemo.Debug.general.xcl" --backend -f "D:\STM32\GIT\GPS_Tracking_STM32\FreeRTOS\Demo\CORTEX_STM32F103_IAR\settings\RTOSDemo.Debug.driver.xcl" 
 
 @echo off 
 goto end 
@@ -34,7 +34,7 @@ goto end
 
 @echo on 
 
-"D:\Install Program\IAR Systems\Embedded Workbench 7.2\common\bin\cspybat" -f "D:\Setup\FreeRTOS\FreeRTOSV8.2.3\FreeRTOS\Demo\CORTEX_STM32F103_IAR\settings\RTOSDemo.Debug.general.xcl" "--debug_file=%~1" --backend -f "D:\Setup\FreeRTOS\FreeRTOSV8.2.3\FreeRTOS\Demo\CORTEX_STM32F103_IAR\settings\RTOSDemo.Debug.driver.xcl" 
+"D:\Install Program\IAR Systems\common\bin\cspybat" -f "D:\STM32\GIT\GPS_Tracking_STM32\FreeRTOS\Demo\CORTEX_STM32F103_IAR\settings\RTOSDemo.Debug.general.xcl" "--debug_file=%~1" --backend -f "D:\STM32\GIT\GPS_Tracking_STM32\FreeRTOS\Demo\CORTEX_STM32F103_IAR\settings\RTOSDemo.Debug.driver.xcl" 
 
 @echo off 
 :end

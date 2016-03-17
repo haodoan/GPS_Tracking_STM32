@@ -1,5 +1,3 @@
- -B 
-
 "--endian=little" 
 
 "--cpu=Cortex-M3" 
@@ -8,7 +6,7 @@
 
 "-p" 
 
-"D:\Install Program\IAR Systems\Embedded Workbench 7.2\arm\CONFIG\debugger\ST\STM32F103xB.ddf" 
+"D:\Install Program\IAR Systems\arm\CONFIG\debugger\ST\STM32F103xB.ddf" 
 
 "--drv_verify_download" 
 

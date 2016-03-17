@@ -76,18 +76,15 @@ int8_t sendATcommand(char *ATcommand, char *expected_answer, unsigned int timeou
 int8_t sendATcommand2(char *ATcommand, char *expected_answer,unsigned int timeout)
 {
     uint8_t count_char = 0;
-    TickType_t xtime ,test;
     signed char SIM_RxChar;
     char cPassMessage[MAX_LENGH_STR];
 
     if( xSemaphoreTake( xMutex, ( TickType_t ) portMAX_DELAY ) == pdTRUE )
     {
         printf("%s\r", ATcommand); // Send the AT command
-        xtime = xTaskGetTickCount();
-
         do
         {
-            if (pdFALSE != xSerialGetChar(&uart2_handle, &SIM_RxChar,0xffff))
+            if (pdFALSE != xSerialGetChar(&uart2_handle, &SIM_RxChar,timeout))
             {
                 cPassMessage[count_char++] = SIM_RxChar;
             }
@@ -95,13 +92,14 @@ int8_t sendATcommand2(char *ATcommand, char *expected_answer,unsigned int timeou
             {
                 break;
             }
-        } while ((xTaskGetTickCount() - xtime < timeout )&&(count_char < MAX_LENGH_STR));
+        } while (count_char < MAX_LENGH_STR);
 
-        if ((count_char == MAX_LENGH_STR) || (xTaskGetTickCount() >= xtime + timeout))  
+        if (count_char == MAX_LENGH_STR)
         {
             xSemaphoreGive( xMutex );
             return pdFALSE;
         }
+
         cPassMessage[count_char] = '\0';
         xSemaphoreGive( xMutex );
     }
@@ -112,7 +110,7 @@ uint8_t GPS_PWR()
 {
    // Power up GPS
      sendATcommand2("AT+CGPSPWR=1", "OK", 2000);
-    // Reset GPS Hot m0de
+    // Reset GPS Hot mode
      sendATcommand2("AT+CGPSRST=1", "OK", 2000);
      return pdTRUE;
 }
@@ -160,7 +158,6 @@ uint8_t get_GPS(GPS_INFO *vGPSinfo)
         strtok(NULL, ",");
         strcpy(vGPSinfo->date,strtok(NULL, ".")); // Gets date
         strtok(NULL, ",");
-        //free(buffer_gps_t) ;
         return pdTRUE ;
     }
     return pdFALSE;
@@ -188,14 +185,14 @@ void Config_GPRS_SIM908(void)
  *END**************************************************************************/
 TCP_STATUS TCP_Connect(char *IP_address, char *Port)
 {
-    char command[70];
-    memset(command, '\0', 70);
+    char command[50];
+
+    memset(command, '\0', 50);
     sendATcommand("AT+CIPSHUT", "SHUT OK", 5000);
-    // delay(2000) ;
     sprintf(command, "AT+CIPSTART=\"TCP\",\"%s\",\"%s\"", IP_address, Port);
     if (pdTRUE == sendATcommand2(command,"CONNECT OK", 60000))
     {
-        return TCP_SUCCESS;
+        return TCP_CONNECT_SUCCESS;
     }
     return TCP_CONNECT_FAIL;
 }
@@ -211,34 +208,44 @@ TCP_STATUS TCP_Send(char *data_string)
     // char data_ctrl_z[120];
     char *data_ctrl_z;
     TCP_STATUS status;
+
     data_ctrl_z = malloc(strlen(data_string) + 2);
-    if (1 == sendATcommand2("AT+CIPSTATUS", "CONNECT OK", 20000))
+
+    if(data_ctrl_z == NULL) {return TCP_FAIL_MEM;}
+
+    // memset(data_ctrl_z , '\0',120);
+    if (pdTRUE == sendATcommand2("AT+CIPSEND", ">", 20000))
     {
-        // memset(data_ctrl_z , '\0',120);
-        if (sendATcommand2("AT+CIPSEND", ">", 20000))
+        sprintf(data_ctrl_z, "%s%c", data_string, 26);
+        if (pdFALSE == sendATcommand2(data_ctrl_z, "SEND OK", 30000))
         {
-            sprintf(data_ctrl_z, "%s%c", data_string, 26);
-            if (!sendATcommand2(data_ctrl_z, "SEND OK", 30000))
-            {
-                status = TCP_SEND_TIMEOUT;
-            }
-            else
-            {
-                status = TCP_SUCCESS;
-            }
+            status = TCP_SEND_TIMEOUT;
         }
         else
         {
-            status = TCP_FAIL;
+            status = TCP_SEND_SUCCESS;
         }
     }
-    else // if(1 == sendATcommand("AT+CIPSTATUS","TCP CLOSE",10000))
+    else
     {
-        // free(data_ctrl_z);
-        status = TCP_CONNECT_FAIL;
+        status = TCP_SEND_FAIL;
     }
     free(data_ctrl_z);
+
     return status;
+}
+
+TCP_STATUS TCP_GetStatus(void)
+{
+
+    if (pdTRUE == sendATcommand2("AT+CIPSTATUS", "CONNECT OK", 20000))
+    {
+        return TCP_CONNECT_SUCCESS
+    }
+    else
+    {
+        return TCP_CONNECT_FAIL;
+    }
 }
 /*FUNCTION**********************************************************************
  *
@@ -250,7 +257,7 @@ TCP_STATUS TCP_Send(char *data_string)
 TCP_STATUS TCP_Close(void)
 {
     // Closes the socket
-    if (pdTRUE == sendATcommand("AT+CIPCLOSE", "CLOSE OK", 10000))
+    if (pdTRUE == sendATcommand2("AT+CIPCLOSE", "CLOSE OK", 10000))
     {
         return TCP_SUCCESS;
     }
@@ -259,9 +266,10 @@ TCP_STATUS TCP_Close(void)
 
 uint8_t GetAccount()
 {
-    char SIM_RxChar;
     char buffer_acc[160] , *ptr_buff;
     uint16_t cnt = 0;
+    char SIM_RxChar;
+
     ptr_buff = buffer_acc;
 
     if (sendATcommand("AT+CUSD=1,\"*101#\"", "OK", 2000))
@@ -354,10 +362,11 @@ void GetCmdDataSIM(char *str , char DATA_AT[5][10])
 }
 
 /*Get Cell ID*/
-void GetCellid(GPS_INFO  *info_cellid)
+void GetCellid(GPS_INFO  *info_cellid )
 {
+    char buff[32];
     char DATA_AT[5][10] ;
-    char buff[30];
+
     memset(DATA_AT , '\0' , 50);
     printf("AT+CREG?\r");
     if(GetResponse(buff, 2000))
@@ -365,5 +374,28 @@ void GetCellid(GPS_INFO  *info_cellid)
         GetCmdDataSIM(buff ,DATA_AT);
         strcpy(info_cellid->LAC,strtok (DATA_AT[2],"\""));
         strcpy(info_cellid->CELLID ,strtok (DATA_AT[3],"\""));
+    }
+}
+
+/*FUNCTION**********************************************************************
+ *
+ * Function Name : GetIMEI
+ * Description   : GetIMEI of Sim module
+ * This function use to get id IMEI of Sim module
+ *
+ *END**************************************************************************/
+uint8_t GetIMEI(char * imei)
+{
+
+    printf("AT+GSN\r");
+
+    if(GetResponse(buff, 2000))
+    {
+        strncpy(imei,buff + 2,15);
+        return pdTRUE;
+    }
+    else
+    {
+        return pdFALSE;
     }
 }
