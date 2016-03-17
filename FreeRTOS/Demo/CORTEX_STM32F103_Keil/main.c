@@ -130,7 +130,8 @@
 #define GPRS_HEAD_CMD "????"
 #define GPRS_END_CMD "$$$$"
 
-#define IP_SERVER "42.115.190.28"
+//#define IP_SERVER "42.115.190.28"
+#define IP_SERVER  "113.22.1.109"
 #define PORT "8888"
 #define GPRS_BLOCK_TIME 5000
 #define GPRS_BUFFER_SIZE 200
@@ -274,18 +275,16 @@ static void vGPSTask(void *pvParameters)
     //  printf("vGPSTask\r\n");
     // printf("ATD+84944500186;\r");
     LCD_write_string(0, 3, "GPS task...");
-    //GPS_PWR();
+    GPS_PWR();
     /*get imei umber of module*/
 //    GetIMEI(vGPSinfo.IMEI);
     vGPSinfo.MCC = 452;
     vGPSinfo.MNC = 2;
-    LCD_write_string(0, 3, "enter while...");
     for (;;)
     {
         if( xSemaphoreTake( SIM908_Mutex, ( TickType_t ) portMAX_DELAY ) == pdTRUE )
         {
-            LCD_write_string(0, 3, "take...");
-            if (pdTRUE == 1)//Wait_GPS_Fix())
+            if (pdTRUE == Wait_GPS_Fix())
             {
                 LCD_write_string(0, 0, "Fix   ");
                 memset(&vGPSinfo, '\0', sizeof(GPS_INFO));
@@ -295,7 +294,7 @@ static void vGPSTask(void *pvParameters)
             {
                 LCD_write_string(0, 0, "Not Fix");
                 memset(&vGPSinfo, '\0', sizeof(GPS_INFO));
-                GetCellid(&vGPSinfo);
+                //GetCellid(&vGPSinfo);
             }
             xSemaphoreGive( SIM908_Mutex );
         }
@@ -317,7 +316,7 @@ static void vGPRSTask(void *pvParameters)
     uint16_t lcd_cnt = 0;
     // Set up sim908
     Sim908_setup();
-    GPS_PWR();
+    //GPS_PWR();
     // setting gprs for Sim module
     // Config_GPRS_SIM908();
     // printf("ATD+84944500186;\r");
