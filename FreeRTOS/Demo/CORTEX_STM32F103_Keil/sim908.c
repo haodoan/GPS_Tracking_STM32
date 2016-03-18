@@ -130,14 +130,13 @@ uint8_t GPS_PWR()
 BaseType_t Wait_GPS_Fix(void)
 {
     // waits for fix GPS
-    if ((pdTRUE == sendATcommand2("AT+CGPSSTATUS?", "3D Fix", 2000)) ||
-        (pdTRUE == sendATcommand2("AT+CGPSSTATUS?", "2D Fix", 2000)))
+    if(pdTRUE == sendATcommand2("AT+CGPSSTATUS?", "3D Fix", 2000))
     {
         return pdTRUE;
     }
     else
     {
-        return pdFALSE;
+        (pdTRUE == sendATcommand2("AT+CGPSSTATUS?", "2D Fix", 2000))?(return pdTRUE) : (return pdFALSE);
     }
 }
 
@@ -196,7 +195,7 @@ TCP_STATUS TCP_Connect(char *IP_address, char *Port)
     memset(command, '\0', 50);
     sendATcommand("AT+CIPSHUT", "SHUT OK", 5000);
     sprintf(command, "AT+CIPSTART=\"TCP\",\"%s\",\"%s\"", IP_address, Port);
-    if (pdTRUE == sendATcommand2(command,"CONNECT OK", 60000))
+    if (pdTRUE == sendATcommand2(command,"CONNECT OK", 30000))
     {
         return TCP_CONNECT_SUCCESS;
     }
@@ -220,10 +219,10 @@ TCP_STATUS TCP_Send(char *data_string)
     if(data_ctrl_z == NULL) {return TCP_FAIL_MEM;}
 
     // memset(data_ctrl_z , '\0',120);
-    if (pdTRUE == sendATcommand2("AT+CIPSEND", ">", 20000))
+    if (pdTRUE == sendATcommand2("AT+CIPSEND", ">", 10000))
     {
         sprintf(data_ctrl_z, "%s%c", data_string, 26);
-        if (pdFALSE == sendATcommand2(data_ctrl_z, "SEND OK", 30000))
+        if (pdFALSE == sendATcommand2(data_ctrl_z, "SEND OK", 20000))
         {
             status = TCP_SEND_TIMEOUT;
         }
@@ -244,7 +243,7 @@ TCP_STATUS TCP_Send(char *data_string)
 TCP_STATUS TCP_GetStatus(void)
 {
 
-    if (pdTRUE == sendATcommand2("AT+CIPSTATUS", "CONNECT OK", 20000))
+    if (pdTRUE == sendATcommand2("AT+CIPSTATUS", "CONNECT OK", 5000))
     {
         return TCP_CONNECT_SUCCESS;
     }
@@ -373,13 +372,17 @@ void GetCellid(GPS_INFO  *info_cellid )
     char buff[32];
     char DATA_AT[5][10] ;
 
-    memset(DATA_AT , '\0' , 50);
-    printf("AT+CREG?\r");
-    if(GetResponse(buff, 2000))
+    if( xSemaphoreTake( xMutex, ( TickType_t ) portMAX_DELAY ) == pdTRUE )
     {
-        GetCmdDataSIM(buff ,DATA_AT);
-        strcpy(info_cellid->LAC,strtok (DATA_AT[2],"\""));
-        strcpy(info_cellid->CELLID ,strtok (DATA_AT[3],"\""));
+        memset(DATA_AT , '\0' , 50);
+        printf("AT+CREG?\r");
+        if(GetResponse(buff, 2000))
+        {
+            GetCmdDataSIM(buff ,DATA_AT);
+            strcpy(info_cellid->LAC,strtok (DATA_AT[2],"\""));
+            strcpy(info_cellid->CELLID ,strtok (DATA_AT[3],"\""));
+        }
+        xSemaphoreGive( xMutex );
     }
 }
 
@@ -393,16 +396,20 @@ void GetCellid(GPS_INFO  *info_cellid )
 uint8_t GetIMEI(char * imei)
 {
     char buff[20];
-    
-    printf("AT+GSN\r");
 
-    if(GetResponse(buff, 2000))
+    if( xSemaphoreTake( xMutex, ( TickType_t ) portMAX_DELAY ) == pdTRUE )
     {
-        strncpy(imei,buff + 2,15);
-        return pdTRUE;
-    }
-    else
-    {
-        return pdFALSE;
+        printf("AT+GSN\r");
+
+        if(GetResponse(buff, 2000))
+        {
+            strncpy(imei,buff + 2,15);
+            return pdTRUE;
+        }
+        else
+        {
+            return pdFALSE;
+        }
+        xSemaphoreGive( xMutex );
     }
 }

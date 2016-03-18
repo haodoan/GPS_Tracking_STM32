@@ -211,7 +211,7 @@ int main(void)
     LCD_clear();
     LCD_write_string(0, 3, "GPS Tracking..");
 
-    SIM908_queue = xQueueCreate(10, sizeof(GPS_INFO));
+    SIM908_queue = xQueueCreate(20, sizeof(GPS_INFO));
 
     SIM908_Mutex = xSemaphoreCreateMutex();
     if( SIM908_Mutex == NULL )
@@ -245,26 +245,6 @@ int main(void)
     return 0;
 }
 /*-----------------------------------------------------------*/
-
-void vLEDTask(void *pvParameters)
-{
-    // xLCDMessage xMessage;
-    uint8_t val = 0;
-    /* Initialise the LCD and display a startup message. */
-    //	prvConfigureLCD();
-    // LCD_DrawMonoPict( ( unsigned long * ) pcBitmap );
-    // printf("vLED blink\r");
-
-    for (;;)
-    {
-        val = !val;
-        GPIO_WriteBit(GPIOC, GPIO_Pin_13, (BitAction)val);
-        vTaskDelay(mainLED_BLINK_DELAY);
-        /* Wait for a message to arrive that requires displaying. */
-        // while( xQueueReceive( xLCDQueue, &xMessage, portMAX_DELAY ) != pdPASS );
-    }
-}
-/*-----------------------------------------------------------*/
 /*GPS task*/
 static void vGPSTask(void *pvParameters)
 {
@@ -277,9 +257,11 @@ static void vGPSTask(void *pvParameters)
     LCD_write_string(0, 3, "GPS task...");
     GPS_PWR();
     /*get imei umber of module*/
-//    GetIMEI(vGPSinfo.IMEI);
+    GetIMEI(vGPSinfo.IMEI);
+
     vGPSinfo.MCC = 452;
-    vGPSinfo.MNC = 2;
+    vGPSinfo.MNC = 2; //Vinaphone
+
     for (;;)
     {
         if( xSemaphoreTake( SIM908_Mutex, ( TickType_t ) portMAX_DELAY ) == pdTRUE )
@@ -300,11 +282,10 @@ static void vGPSTask(void *pvParameters)
         }
         if (xQueueSend(SIM908_queue, &vGPSinfo, GPS_BLOCK_TIME) != pdPASS)
         {
-            error_lcd_printf();
+            LCD_write_string(0, 3, "Queue fully...");
         }
 
-
-        vTaskDelay(2000);
+        vTaskDelay(5000);
     }
 }
 /*GPRS task*/
@@ -335,13 +316,13 @@ static void vGPRSTask(void *pvParameters)
                 if (vGPSinfo.latitude == NULL)
                 {
                     memset(gprs_buffer, '\0', sizeof(gprs_buffer) / sizeof(char));
-                    sprintf(gprs_buffer, "%s,%s,%s,%s,%s\r\n", GPRS_HEAD_CMD, vGPSinfo.IMEI, vGPSinfo.LAC,
-                            vGPSinfo.CELLID, GPRS_END_CMD);
+                    sprintf(gprs_buffer, "%s,0,%s,%d,%d,%s,%s,%s\r\n", GPRS_HEAD_CMD, vGPSinfo.IMEI, vGPSinfo.MCC,
+                        vGPSinfo.MNC,vGPSinfo.LAC,vGPSinfo.CELLID, GPRS_END_CMD);
                 }
                 else
                 {
                     memset(gprs_buffer, '\0', sizeof(gprs_buffer) / sizeof(char));
-                    sprintf(gprs_buffer, "%s,%s,%s,%s,%s\r\n", GPRS_HEAD_CMD, vGPSinfo.IMEI, vGPSinfo.latitude,
+                    sprintf(gprs_buffer, "%s,1,%s,%s,%s,%s\r\n", GPRS_HEAD_CMD, vGPSinfo.IMEI, vGPSinfo.latitude,
                             vGPSinfo.longtitude,GPRS_END_CMD);
                 }
                 if( xSemaphoreTake( SIM908_Mutex, ( TickType_t ) portMAX_DELAY ) == pdTRUE )
@@ -349,7 +330,7 @@ static void vGPRSTask(void *pvParameters)
                     if (TCP_SEND_SUCCESS == TCP_Send(gprs_buffer))
                     {
                         char lcd_buff_out[20];
-                        sprintf(lcd_buff_out, "Send OK : %d", lcd_cnt++);
+                        sprintf(lcd_buff_out, "Send OK : %d    ", lcd_cnt++);
                         LCD_write_string(0, 3, lcd_buff_out);
                     }
                     else
