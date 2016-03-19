@@ -28,14 +28,16 @@ uint8_t GetResponse(char *buff_receive, uint32_t timeout)
 
     do
     {
-        if (pdFALSE != xSerialGetChar(&uart2_handle, &SIM_RxChar, 10))
+        if (pdFALSE != xSerialGetChar(&uart2_handle, &SIM_RxChar, 20))
         {
             cPassMessage[count_char++] = SIM_RxChar;
         }
         else
         {
-            if((SIM_RxChar == 0xA) && (cPassMessage[count_char -2] == 0xD) && (count_char >= 2))
+            if((SIM_RxChar == 0xA) && (cPassMessage[count_char -2] == 0xD) && (count_char > 4))
+            {
                 break;
+            }
         }
     } while ((xTaskGetTickCount() - xtime < timeout )&&(count_char < MAX_LENGH_STR));
 
@@ -52,9 +54,11 @@ uint8_t GetResponse(char *buff_receive, uint32_t timeout)
 int8_t sendATcommand(char *ATcommand, char *expected_answer, unsigned int timeout)
 {
     char buffer_response[MAX_LENGH_STR];
-    // strcpy(buffdebug,ATcommand);
+    char SIM_RxChar;
+
     if( xSemaphoreTake( xMutex, ( TickType_t ) portMAX_DELAY ) == pdTRUE )
     {
+        while(pdTRUE == xSerialGetChar(&uart2_handle, &SIM_RxChar,100));
         printf("%s\r", ATcommand); // Send the AT command
         if (pdFALSE == GetResponse(buffer_response, timeout))
         {
@@ -82,6 +86,7 @@ int8_t sendATcommand2(char *ATcommand, char *expected_answer,unsigned int timeou
 
     if( xSemaphoreTake( xMutex, ( TickType_t ) portMAX_DELAY ) == pdTRUE )
     {
+        while(pdTRUE == xSerialGetChar(&uart2_handle, &SIM_RxChar,100));
         printf("%s\r", ATcommand); // Send the AT command
         do
         {
@@ -105,7 +110,6 @@ int8_t sendATcommand2(char *ATcommand, char *expected_answer,unsigned int timeou
             xSemaphoreGive( xMutex );
             return pdFALSE;
         }
-
         cPassMessage[count_char] = '\0';
         xSemaphoreGive( xMutex );
     }
@@ -136,7 +140,7 @@ BaseType_t Wait_GPS_Fix(void)
     }
     else
     {
-        (pdTRUE == sendATcommand2("AT+CGPSSTATUS?", "2D Fix", 2000))?(return pdTRUE) : (return pdFALSE);
+        return(sendATcommand2("AT+CGPSSTATUS?", "2D Fix", 2000));
     }
 }
 
@@ -150,22 +154,30 @@ BaseType_t Wait_GPS_Fix(void)
 uint8_t get_GPS(GPS_INFO *vGPSinfo)
 {
     char buffer_response[MAX_LENGH_STR];
-    //GPS_INFO vGPSinfo;
-    // First get the NMEA string
-    printf("AT+CGPSINF=0\r");
-    if(pdTRUE == GetResponse(buffer_response,2000))
-    {
-        strtok(buffer_response, ",");
-        strcpy(vGPSinfo->longtitude,strtok(NULL, ",")); // Gets longitude
-        strcpy(vGPSinfo->latitude,strtok(NULL, ",")); // Gets latitude
-        //strcpy(altitude,strtok(NULL, ".")); // Gets altitude
-        strtok(NULL, ".");
-        strtok(NULL, ",");
-        strcpy(vGPSinfo->date,strtok(NULL, ".")); // Gets date
-        strtok(NULL, ",");
-        return pdTRUE ;
+    uint32_t error;
+    char SIM_RxChar;
+    if( xSemaphoreTake( xMutex, ( TickType_t ) portMAX_DELAY ) == pdTRUE )
+    { 
+        while(pdTRUE == xSerialGetChar(&uart2_handle, &SIM_RxChar,100));
+        // First get the NMEA string
+        printf("AT+CGPSINF=0\r");
+        if(pdTRUE == GetResponse(buffer_response,2000))
+        {
+            strtok(buffer_response, ",");
+            strcpy(vGPSinfo->longtitude,strtok(NULL, ",")); // Gets longitude
+            strcpy(vGPSinfo->latitude,strtok(NULL, ",")); // Gets latitude
+            //strcpy(altitude,strtok(NULL, ".")); // Gets altitude
+            strtok(NULL, ".");
+            strtok(NULL, ",");
+            strcpy(vGPSinfo->date,strtok(NULL, ".")); // Gets date
+            strtok(NULL, ",");
+            error = pdTRUE ;
+        }
+        else {error = pdFAIL;}
+        
+        xSemaphoreGive( xMutex );
     }
-    return pdFALSE;
+    return error;
 }
 /*FUNCTION**********************************************************************
  *
@@ -188,14 +200,14 @@ void Config_GPRS_SIM908(void)
  * This function
  *AT+CIPSTART="TCP","42.115.190.28","8888"
  *END**************************************************************************/
-TCP_STATUS TCP_Connect(char *IP_address, char *Port)
+TCP_STATUS TCP_Connect(char *IP_address, char *Port,uint32_t timeout)
 {
     char command[50];
 
     memset(command, '\0', 50);
-    sendATcommand("AT+CIPSHUT", "SHUT OK", 5000);
+    sendATcommand2("AT+CIPSHUT", "SHUT OK", 5000);
     sprintf(command, "AT+CIPSTART=\"TCP\",\"%s\",\"%s\"", IP_address, Port);
-    if (pdTRUE == sendATcommand2(command,"CONNECT OK", 30000))
+    if (pdTRUE == sendATcommand2(command,"CONNECT OK", timeout))
     {
         return TCP_CONNECT_SUCCESS;
     }
@@ -303,34 +315,36 @@ void Sim908_setup(void)
         while(1);
     }
     Sim908_power_on(); // Power up Sim908 module
+    //GetIMEI(imei);
+    //GetAccount();
     /*****Config Sim908 Module *****************************/
-    sendATcommand("ATE0", "OK", 2000);            // off echo
-    sendATcommand("AT+CFUN=1", "OK", 2000);       // off echo
-    sendATcommand("AT+CIPSHUT", "SHUT OK", 3000); // disconect gprs
-    sendATcommand("AT+CSCLK=1", "OK", 2000);      // sleep mode
-    sendATcommand("AT+CMGF=1", "OK", 2000);
+    sendATcommand2("AT+CFUN=1", "OK", 2000);       // off echo
+    sendATcommand2("AT+CIPSHUT", "SHUT OK", 3000); // disconect gprs
+    sendATcommand2("AT+CSCLK=1", "OK", 2000);      // sleep mode
+    sendATcommand2("AT+CMGF=1", "OK", 2000);
     // GPIO_WriteLow(DTR_GPIO_PORT, (GPIO_Pin_TypeDef)DTR_GPIO_PINS); //wake up
     // Power up GPS
     //sendATcommand("AT+CGPSPWR=1", "OK", 2000); // power up gps
     // Reset GPS Cold mde
     //sendATcommand("AT+CGPSRST=1", "OK", 2000);
-    //sendATcommand("AT+CREG=2", "OK", 2000);
+    sendATcommand("AT+CREG=2", "OK", 2000);
     /************End Config Sim908 Module *****************************/
     // delay(1000);
-    while (sendATcommand("AT+CREG?", "+CREG: 2,1", 2000) == pdFALSE);
+    Config_GPRS_SIM908();
+    while (sendATcommand2("AT+CREG?", "+CREG: 2,1", 2000) == pdFALSE);
     // Configure DNS server address
-    sendATcommand("AT+CGATT", "OK", 2000);
+    sendATcommand2("AT+CGATT", "OK", 2000);
     // delay(1000);
-    sendATcommand("AT+CSTT=\"3m-world\",\"mms\",\"mms\"", "OK", 2000);
-    sendATcommand("AT+CIICR", "OK", 8000);
+    sendATcommand2("AT+CSTT=\"3m-world\",\"mms\",\"mms\"", "OK", 2000);
+    sendATcommand2("AT+CIICR", "OK", 8000);
     // delay(5000);
-    sendATcommand("AT+CIPSTATUS", "OK", 3000);
+    sendATcommand2("AT+CIPSTATUS", "OK", 3000);
     // delay(2000);
-    sendATcommand("AT+CIFSR", "OK", 3000);
+    sendATcommand2("AT+CIFSR", "OK", 3000);
     // delay(4000);
-    sendATcommand("AT+CDNSCFG=\"8.8.8.8\",\"4.4.4.4\"", "OK", 2000);
+    sendATcommand2("AT+CDNSCFG=\"8.8.8.8\",\"4.4.4.4\"", "OK", 2000);
     // delay(2000);
-    sendATcommand("AT&W", "OK", 2000);
+    sendATcommand2("AT&W", "OK", 2000);
     /*Config for first time*/
     // Config_GPRS_SIM908();
 }
@@ -338,18 +352,17 @@ void Sim908_setup(void)
 void Sim908_power_on(void)
 {
 
-    if (pdFALSE == sendATcommand("AT", "OK", 2000))
+    if (pdFALSE == sendATcommand2("AT", "OK", 2000))
     { // power on pulse
         SIM908_PWRON;
         delay_ms(3000);
         SIM908_PWROFF;
         // Wake up
         // waits for an answer from the module
-        printf("ATE0\r");
-        while(pdFALSE == sendATcommand("AT", "OK", 2000));
+        sendATcommand2("ATE0", "OK", 2000);
+        while(pdFALSE == sendATcommand2("AT", "OK", 2000));
     }
-
-    printf("ATE0\r");
+    //sendATcommand2("AT", "OK", 2000);
 }
 
 void GetCmdDataSIM(char *str , char DATA_AT[5][10])
@@ -371,16 +384,20 @@ void GetCellid(GPS_INFO  *info_cellid )
 {
     char buff[32];
     char DATA_AT[5][10] ;
-
+    char SIM_RxChar;
+    
     if( xSemaphoreTake( xMutex, ( TickType_t ) portMAX_DELAY ) == pdTRUE )
     {
         memset(DATA_AT , '\0' , 50);
+        while(pdTRUE == xSerialGetChar(&uart2_handle, &SIM_RxChar,100));        
         printf("AT+CREG?\r");
         if(GetResponse(buff, 2000))
         {
             GetCmdDataSIM(buff ,DATA_AT);
             strcpy(info_cellid->LAC,strtok (DATA_AT[2],"\""));
             strcpy(info_cellid->CELLID ,strtok (DATA_AT[3],"\""));
+            strcpy(info_cellid->latitude ,"0.00");
+            strcpy(info_cellid->longtitude ,"0.00");
         }
         xSemaphoreGive( xMutex );
     }
@@ -395,21 +412,25 @@ void GetCellid(GPS_INFO  *info_cellid )
  *END**************************************************************************/
 uint8_t GetIMEI(char * imei)
 {
-    char buff[20];
-
+    char buff[32];
+    uint32_t error;
+    char SIM_RxChar;
+    
     if( xSemaphoreTake( xMutex, ( TickType_t ) portMAX_DELAY ) == pdTRUE )
     {
+        while(pdTRUE == xSerialGetChar(&uart2_handle, &SIM_RxChar,100));
         printf("AT+GSN\r");
-
         if(GetResponse(buff, 2000))
         {
-            strncpy(imei,buff + 2,15);
-            return pdTRUE;
+            strncpy(imei,strstr(buff,"\r\n") + 2,15);
+            *(imei+15) = 0;
+            error =  pdTRUE;
         }
         else
         {
-            return pdFALSE;
+            error =  pdFALSE;
         }
-        xSemaphoreGive( xMutex );
+        xSemaphoreGive( xMutex );        
     }
+    return error;
 }

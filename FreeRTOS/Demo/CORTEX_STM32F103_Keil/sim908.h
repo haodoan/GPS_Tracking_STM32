@@ -28,6 +28,7 @@ typedef struct gps_info_t
     char CELLID[6];
     uint16_t  MNC;
     uint16_t  MCC;
+    uint32_t  fix;
 }GPS_INFO;
 #define MAX_LENGH_STR  100
 #define SIM908_PWRON   GPIO_WriteBit(GPIOB, GPIO_Pin_0, Bit_SET)
@@ -41,7 +42,7 @@ uint8_t start_GPS(void);
 BaseType_t Wait_GPS_Fix(void);
 uint8_t get_GPS(GPS_INFO *vGPSinfo);
 void Config_GPRS_SIM908(void);
-TCP_STATUS TCP_Connect(char *IP_address, char *Port);
+TCP_STATUS TCP_Connect(char *IP_address, char *Port, unsigned int timeout);
 TCP_STATUS TCP_Send(char *data_string)	;
 TCP_STATUS TCP_Close(void);
 TCP_STATUS TCP_GetStatus(void);
