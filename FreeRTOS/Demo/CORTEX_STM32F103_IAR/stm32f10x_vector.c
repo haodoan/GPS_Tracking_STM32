@@ -89,7 +89,7 @@ const intvec_elem __vector_table[] =
   TIM1_UP_IRQHandler,
   TIM1_TRG_COM_IRQHandler,
   TIM1_CC_IRQHandler,
-  vTimer2IntHandler,
+  TIM2_IRQHandler,
   TIM3_IRQHandler,
   TIM4_IRQHandler,
   I2C1_EV_IRQHandler,
@@ -107,4 +107,3 @@ const intvec_elem __vector_table[] =
 };
 
 /******************* (C) COPYRIGHT 2007 STMicroelectronics *****END OF FILE****/
-

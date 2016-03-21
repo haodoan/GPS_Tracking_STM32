@@ -95,14 +95,15 @@
  * write an error to the LCD (via the LCD task).  If all the demo tasks are
  * executing with their expected behaviour then the check task writes PASS
  * along with the max jitter time to the LCD (again via the LCD task), as
- * described above.
+ ":.k, * described above.
  *
  */
 
 /* Standard includes. */
 #include <stdio.h>
-
+#include <string.h>
 /* Scheduler includes. */
+
 #include "FreeRTOS.h"
 #include "task.h"
 #include "queue.h"
@@ -111,69 +112,37 @@
 #include "stm32f10x_it.h"
 
 /* Demo app includes. */
-#include "lcd.h"
-#include "LCD_Message.h"
-#include "BlockQ.h"
-#include "death.h"
-#include "integer.h"
-#include "blocktim.h"
-#include "partest.h"
-#include "semtest.h"
-#include "PollQ.h"
-#include "flash.h"
-#include "comtest2.h"
-
+#include "serial.h"
+#include "sim908.h"
+#include "lcd_nokia5110/nokia_5110.h"
 /* Task priorities. */
-#define mainQUEUE_POLL_PRIORITY				( tskIDLE_PRIORITY + 2 )
-#define mainCHECK_TASK_PRIORITY				( tskIDLE_PRIORITY + 3 )
-#define mainSEM_TEST_PRIORITY				( tskIDLE_PRIORITY + 1 )
-#define mainBLOCK_Q_PRIORITY				( tskIDLE_PRIORITY + 2 )
-#define mainCREATOR_TASK_PRIORITY           ( tskIDLE_PRIORITY + 3 )
-#define mainFLASH_TASK_PRIORITY				( tskIDLE_PRIORITY + 1 )
-#define mainCOM_TEST_PRIORITY				( tskIDLE_PRIORITY + 1 )
-#define mainINTEGER_TASK_PRIORITY           ( tskIDLE_PRIORITY )
-
-/* Constants related to the LCD. */
-#define mainMAX_LINE						( 240 )
-#define mainROW_INCREMENT					( 24 )
-#define mainMAX_COLUMN						( 20 )
-#define mainCOLUMN_START					( 319 )
-#define mainCOLUMN_INCREMENT 				( 16 )
-
-/* The maximum number of message that can be waiting for display at any one
-time. */
-#define mainLCD_QUEUE_SIZE					( 3 )
-
+#define mainGPS_TASK_PRIORITY (tskIDLE_PRIORITY + 3)
+#define mainGPRS_TASK_PRIORITY (tskIDLE_PRIORITY + 4)
+#define mainLED_TASK_PRIORITY (tskIDLE_PRIORITY)
 /* The check task uses the sprintf function so requires a little more stack. */
-#define mainCHECK_TASK_STACK_SIZE			( configMINIMAL_STACK_SIZE + 50 )
-
-/* Dimensions the buffer into which the jitter time is written. */
-#define mainMAX_MSG_LEN						25
-
+#define mainGPS_TASK_STACK_SIZE (configMINIMAL_STACK_SIZE + 200)
+#define mainGPRS_TASK_STACK_SIZE (configMINIMAL_STACK_SIZE + 200)
+#define mainLED_TASK_STACK_SIZE (configMINIMAL_STACK_SIZE)
 /* The time between cycles of the 'check' task. */
-#define mainCHECK_DELAY						( ( TickType_t ) 5000 / portTICK_PERIOD_MS )
+#define mainGPS_DELAY ((TickType_t)5000 / portTICK_PERIOD_MS)
+#define mainLED_BLINK_DELAY (500)
 
-/* The number of nano seconds between each processor clock. */
-#define mainNS_PER_CLOCK ( ( unsigned long ) ( ( 1.0 / ( double ) configCPU_CLOCK_HZ ) * 1000000000.0 ) )
+#define GPRS_HEAD_CMD "????"
+#define GPRS_END_CMD "$$$$"
 
-/* Baud rate used by the comtest tasks. */
-#define mainCOM_TEST_BAUD_RATE		( 115200 )
+//#define IP_SERVER "42.115.190.28"
+#define IP_SERVER  "118.71.231.148"
+#define PORT "8888"
+#define GPRS_BLOCK_TIME 5000
+#define GPRS_BUFFER_SIZE 200
 
-/* The LED used by the comtest tasks. See the comtest.c file for more
-information. */
-#define mainCOM_TEST_LED			( 3 )
-
+#define GPS_BLOCK_TIME 0
 /*-----------------------------------------------------------*/
 
 /*
  * Configure the clocks, GPIO and other peripherals as required by the demo.
  */
-static void prvSetupHardware( void );
-
-/*
- * Configure the LCD as required by the demo.
- */
-static void prvConfigureLCD( void );
+static void prvSetupHardware(void);
 
 /*
  * The LCD is written two by more than one task so is controlled by a
@@ -181,12 +150,12 @@ static void prvConfigureLCD( void );
  * access the LCD directly.  Other tasks wanting to display a message send
  * the message to the gatekeeper.
  */
-static void vLCDTask( void *pvParameters );
+static void vLEDTask(void *pvParameters);
 
 /*
  * Retargets the C library printf function to the USART.
  */
-int fputc( int ch, FILE *f );
+int fputc(int ch, FILE *f);
 
 /*
  * Checks the status of all the demo tasks then prints a message to the
@@ -198,279 +167,294 @@ int fputc( int ch, FILE *f );
  * Messages are not written directly to the terminal, but passed to vLCDTask
  * via a queue.
  */
-static void vCheckTask( void *pvParameters );
+static void vGPSTask(void *pvParameters);
+
+static void vGPRSTask(void *pvParameters);
 
 /*
  * Configures the timers and interrupts for the fast interrupt test as
  * described at the top of this file.
  */
-extern void vSetupTimerTest( void );
+extern void vSetupTimerTest(void);
+void error_lcd_printf(void);
 
+/*handler for using USART*/
+extern uart_rtos_handle_t uart1_handle;
+extern uart_rtos_handle_t uart2_handle;
+
+QueueHandle_t SIM908_queue;
+SemaphoreHandle_t SIM908_Mutex;
 /*-----------------------------------------------------------*/
 
-/* The queue used to send messages to the LCD task. */
-QueueHandle_t xLCDQueue;
-
-/*-----------------------------------------------------------*/
-
-int main( void )
+int main(void)
 {
 #ifdef DEBUG
-  debug();
+    debug();
 #endif
 
-	prvSetupHardware();
+    prvSetupHardware();
 
-	/* Create the queue used by the LCD task.  Messages for display on the LCD
-	are received via this queue. */
-	xLCDQueue = xQueueCreate( mainLCD_QUEUE_SIZE, sizeof( xLCDMessage ) );
+    /* Start the standard demo tasks. */
+    //	vStartBlockingQueueTasks( mainBLOCK_Q_PRIORITY );
+    //	vCreateBlockTimeTasks();
+    //	vStartSemaphoreTasks( mainSEM_TEST_PRIORITY );
+    //	vStartPolledQueueTasks( mainQUEUE_POLL_PRIORITY );
+    //	vStartIntegerMathTasks( mainINTEGER_TASK_PRIORITY );
+    //	vStartLEDFlashTasks( mainFLASH_TASK_PRIORITY );
+    //	vAltStartComTestTasks( mainCOM_TEST_PRIORITY, mainCOM_TEST_BAUD_RATE, mainCOM_TEST_LED );
 
-	/* Start the standard demo tasks. */
-	vStartBlockingQueueTasks( mainBLOCK_Q_PRIORITY );
-    vCreateBlockTimeTasks();
-    vStartSemaphoreTasks( mainSEM_TEST_PRIORITY );
-    vStartPolledQueueTasks( mainQUEUE_POLL_PRIORITY );
-    vStartIntegerMathTasks( mainINTEGER_TASK_PRIORITY );
-	vStartLEDFlashTasks( mainFLASH_TASK_PRIORITY );
-	vAltStartComTestTasks( mainCOM_TEST_PRIORITY, mainCOM_TEST_BAUD_RATE, mainCOM_TEST_LED );
+    LCD_init();
+    LCD_clear();
+    LCD_write_string(0, 3, "GPS Tracking..");
 
-	/* Start the tasks defined within this file/specific to this demo. */
-    xTaskCreate( vCheckTask, "Check", mainCHECK_TASK_STACK_SIZE, NULL, mainCHECK_TASK_PRIORITY, NULL );
-	xTaskCreate( vLCDTask, "LCD", configMINIMAL_STACK_SIZE, NULL, tskIDLE_PRIORITY, NULL );
+    SIM908_queue = xQueueCreate(20, sizeof(GPS_INFO));
 
-	/* The suicide tasks must be created last as they need to know how many
-	tasks were running prior to their creation in order to ascertain whether
-	or not the correct/expected number of tasks are running at any given time. */
-    vCreateSuicidalTasks( mainCREATOR_TASK_PRIORITY );
+    SIM908_Mutex = xSemaphoreCreateMutex();
+    if( SIM908_Mutex == NULL )
+    {
+        while(1);
+    }
+    if (SIM908_queue == NULL)
+    {
+        while (TRUE)
+            ;
+    }
 
-	/* Configure the timers used by the fast interrupt timer test. */
-	vSetupTimerTest();
+    /* Start the tasks defined within this file/specific to this demo. */
+    // xTaskCreate( vGPSTask, "GPS", mainGPS_TASK_STACK_SIZE, NULL, mainGPS_TASK_PRIORITY, NULL );
+    xTaskCreate(vGPRSTask, "GPRS", mainGPRS_TASK_STACK_SIZE, NULL, mainGPRS_TASK_PRIORITY, NULL);
+    // xTaskCreate( vLEDTask, "LED", mainLED_TASK_STACK_SIZE, NULL, mainLED_TASK_PRIORITY, NULL );
 
-	/* Start the scheduler. */
-	vTaskStartScheduler();
+    /* The suicide tasks must be created last as they need to know how many
+    tasks were running prior to their creation in order to ascertain whether
+    or not the correct/expected number of tasks are running at any given time. */
+    //    vCreateSuicidalTasks( mainCREATOR_TASK_PRIORITY );
 
-	/* Will only get here if there was not enough heap space to create the
-	idle task. */
-	return 0;
+    /* Configure the timers used by the fast interrupt timer test. */
+    vSetupTimerTest();
+
+    /* Start the scheduler. */
+    vTaskStartScheduler();
+
+    /* Will only get here if there was not enough heap space to create the
+    idle task. */
+    return 0;
 }
 /*-----------------------------------------------------------*/
-
-void vLCDTask( void *pvParameters )
+/*GPS task*/
+static void vGPSTask(void *pvParameters)
 {
-xLCDMessage xMessage;
+    GPS_INFO vGPSinfo;
+    //	TickType_t xLastExecutionTime;
+    // char buff_receive[20];
+    //	xLastExecutionTime = xTaskGetTickCount();
+    //  printf("vGPSTask\r\n");
+    // printf("ATD+84944500186;\r");
+    //LCD_write_string(0, 3, "GPS task...");
+    GPS_PWR();
+    /*get imei umber of module*/
+    GetIMEI(vGPSinfo.IMEI);
 
-	/* Initialise the LCD and display a startup message. */
-	//prvConfigureLCD();
-	//LCD_DrawMonoPict( ( unsigned long * ) pcBitmap );
+    vGPSinfo.MCC = 452;
+    vGPSinfo.MNC = 2; //Vinaphone
 
-	for( ;; )
-	{
-		/* Wait for a message to arrive that requires displaying. */
-		while( xQueueReceive( xLCDQueue, &xMessage, portMAX_DELAY ) != pdPASS );
-
-		/* Display the message.  Print each message to a different position. */
-		printf( ( char const * ) xMessage.pcMessage );
-	}
-}
-/*-----------------------------------------------------------*/
-
-static void vCheckTask( void *pvParameters )
-{
-TickType_t xLastExecutionTime;
-xLCDMessage xMessage;
-static signed char cPassMessage[ mainMAX_MSG_LEN ];
-extern unsigned short usMaxJitter;
-
-	xLastExecutionTime = xTaskGetTickCount();
-	xMessage.pcMessage = cPassMessage;
-
-    for( ;; )
-	{
-		/* Perform this check every mainCHECK_DELAY milliseconds. */
-		vTaskDelayUntil( &xLastExecutionTime, mainCHECK_DELAY );
-
-		/* Has an error been found in any task? */
-
-        if( xAreBlockingQueuesStillRunning() != pdTRUE )
-		{
-			xMessage.pcMessage = "ERROR IN BLOCK Q\n";
-		}
-		else if( xAreBlockTimeTestTasksStillRunning() != pdTRUE )
-		{
-			xMessage.pcMessage = "ERROR IN BLOCK TIME\n";
-		}
-        else if( xAreSemaphoreTasksStillRunning() != pdTRUE )
+    for (;;)
+    {
+        if( xSemaphoreTake( SIM908_Mutex, ( TickType_t ) portMAX_DELAY ) == pdTRUE )
         {
-            xMessage.pcMessage = "ERROR IN SEMAPHORE\n";
+            if (pdTRUE == Wait_GPS_Fix())
+            {
+                LCD_write_string(0, 0, "Fix        ");
+                vGPSinfo.fix  = pdTRUE;
+                //memset(&vGPSinfo, '\0', sizeof(GPS_INFO));
+                get_GPS(&vGPSinfo);
+            }
+            else // get cell id
+            {
+                LCD_write_string(0, 0, "Not Fix");
+                vGPSinfo.fix = pdFALSE;
+                //memset(&vGPSinfo, '\0', sizeof(GPS_INFO));
+                GetCellid(&vGPSinfo);
+            }
+            xSemaphoreGive( SIM908_Mutex );
         }
-        else if( xArePollingQueuesStillRunning() != pdTRUE )
+        if (xQueueSend(SIM908_queue, &vGPSinfo, GPS_BLOCK_TIME) != pdPASS)
         {
-            xMessage.pcMessage = "ERROR IN POLL Q\n";
+            LCD_write_string(0, 3, "Queue fully...");
         }
-        else if( xIsCreateTaskStillRunning() != pdTRUE )
+
+        vTaskDelay(5000);
+    }
+}
+/*GPRS task*/
+static void vGPRSTask(void *pvParameters)
+{
+    GPS_INFO vGPSinfo;
+    TCP_STATUS vTCP_status;
+    char gprs_buffer[GPRS_BUFFER_SIZE] = {0};
+    uint16_t lcd_cnt = 0;
+    // Set up sim908
+    Sim908_setup();
+    //GPS_PWR();
+    // setting gprs for Sim module
+    Config_GPRS_SIM908();
+    // printf("ATD+84944500186;\r");
+    LCD_write_string(0, 3, "Connecting...");
+    vTCP_status = TCP_Connect((char *)IP_SERVER, (char *)PORT);
+    (vTCP_status == TCP_CONNECT_SUCCESS) ? LCD_write_string(0, 3, "Connect OK...") : LCD_write_string(0, 3, "Connect FAIL");
+    
+//    GetIMEI(vGPSinfo.IMEI);
+    xTaskCreate(vGPSTask, "GPS", mainGPS_TASK_STACK_SIZE, NULL, mainGPS_TASK_PRIORITY, NULL);
+
+    for (;;)
+    {
+        if (TCP_CONNECT_SUCCESS == TCP_GetStatus())
         {
-            xMessage.pcMessage = "ERROR IN CREATE\n";
+            if (xQueueReceive(SIM908_queue, &vGPSinfo, GPRS_BLOCK_TIME))
+            {
+                if (vGPSinfo.fix == pdFALSE)
+                {
+                    memset(gprs_buffer, '\0', sizeof(gprs_buffer) / sizeof(char));
+                    sprintf(gprs_buffer, "%s,0,%s,%d,%d,%s,%s,%s\r\n", GPRS_HEAD_CMD, vGPSinfo.IMEI, vGPSinfo.MCC,
+                        vGPSinfo.MNC,vGPSinfo.LAC,vGPSinfo.CELLID, GPRS_END_CMD);
+                }
+                else
+                {
+                    memset(gprs_buffer, '\0', sizeof(gprs_buffer) / sizeof(char));
+                    sprintf(gprs_buffer, "%s,1,%s,%s,%s,%s,%s\r\n", GPRS_HEAD_CMD, vGPSinfo.IMEI,vGPSinfo.date,vGPSinfo.latitude,
+                            vGPSinfo.longtitude,GPRS_END_CMD);
+                }
+                if( xSemaphoreTake( SIM908_Mutex, ( TickType_t ) portMAX_DELAY ) == pdTRUE )
+                {
+                    if (TCP_SEND_SUCCESS == TCP_Send(gprs_buffer))
+                    {
+                        char lcd_buff_out[20];
+                        sprintf(lcd_buff_out, "Send OK : %d    ", lcd_cnt++);
+                        LCD_write_string(0, 3, lcd_buff_out);
+                    }
+                    else
+                    {
+                        LCD_write_string(0, 3, "Send FAIL");
+                    }
+
+                     xSemaphoreGive( SIM908_Mutex );
+                }
+            }
         }
-        else if( xAreIntegerMathsTaskStillRunning() != pdTRUE )
+        else
         {
-            xMessage.pcMessage = "ERROR IN MATH\n";
+            if (TCP_CONNECT_SUCCESS == TCP_Connect((char *)IP_SERVER, (char *)PORT))
+            {
+                LCD_write_string(0, 3, "RE-CONNECT OK...");
+                TCP_Send(gprs_buffer);
+            }
         }
-		else if( xAreComTestTasksStillRunning() != pdTRUE )
-		{
-			xMessage.pcMessage = "ERROR IN COM TEST\n";
-		}
-		else
-		{
-			sprintf( ( char * ) cPassMessage, "PASS [%uns]\n", ( ( unsigned long ) usMaxJitter ) * mainNS_PER_CLOCK );
-		}
-
-		/* Send the message to the LCD gatekeeper for display. */
-		xQueueSend( xLCDQueue, &xMessage, portMAX_DELAY );
-	}
+    }
 }
 /*-----------------------------------------------------------*/
 
-static void prvSetupHardware( void )
+static void prvSetupHardware(void)
 {
-	/* Start with the clocks in their expected state. */
-	RCC_DeInit();
+    GPIO_InitTypeDef GPIO_InitStructure;
 
-	/* Enable HSE (high speed external clock). */
-	RCC_HSEConfig( RCC_HSE_ON );
+    /* Enable HSE (high speed external clock). */
+    RCC_HSEConfig(RCC_HSE_ON);
 
-	/* Wait till HSE is ready. */
-	while( RCC_GetFlagStatus( RCC_FLAG_HSERDY ) == RESET )
-	{
-	}
+    /* Wait till HSE is ready. */
+    while (RCC_GetFlagStatus(RCC_FLAG_HSERDY) == RESET)
+    {
+    }
 
-	/* 2 wait states required on the flash. */
-	*( ( unsigned long * ) 0x40022000 ) = 0x02;
+    /* 2 wait states required on the flash. */
+    *((unsigned long *)0x40022000) = 0x02;
 
-	/* HCLK = SYSCLK */
-	RCC_HCLKConfig( RCC_SYSCLK_Div1 );
+    /* HCLK = SYSCLK */
+    RCC_HCLKConfig(RCC_SYSCLK_Div1);
 
-	/* PCLK2 = HCLK */
-	RCC_PCLK2Config( RCC_HCLK_Div1 );
+    /* PCLK2 = HCLK */
+    RCC_PCLK2Config(RCC_HCLK_Div1);
 
-	/* PCLK1 = HCLK/2 */
-	RCC_PCLK1Config( RCC_HCLK_Div2 );
+    /* PCLK1 = HCLK/2 */
+    RCC_PCLK1Config(RCC_HCLK_Div2);
 
-	/* PLLCLK = 8MHz * 9 = 72 MHz. */
-	RCC_PLLConfig( RCC_PLLSource_HSE_Div1, RCC_PLLMul_9 );
+    /* PLLCLK = 12MHz * 6 = 72 MHz. */
+    RCC_PLLConfig(RCC_PLLSource_HSE_Div1, RCC_PLLMul_6);
 
-	/* Enable PLL. */
-	RCC_PLLCmd( ENABLE );
+    /* Enable PLL. */
+    RCC_PLLCmd(ENABLE);
 
-	/* Wait till PLL is ready. */
-	while(RCC_GetFlagStatus(RCC_FLAG_PLLRDY) == RESET)
-	{
-	}
+    /* Wait till PLL is ready. */
+    while (RCC_GetFlagStatus(RCC_FLAG_PLLRDY) == RESET)
+    {
+    }
 
-	/* Select PLL as system clock source. */
-	RCC_SYSCLKConfig( RCC_SYSCLKSource_PLLCLK );
+    /* Select PLL as system clock source. */
+    RCC_SYSCLKConfig(RCC_SYSCLKSource_PLLCLK);
 
-	/* Wait till PLL is used as system clock source. */
-	while( RCC_GetSYSCLKSource() != 0x08 )
-	{
-	}
+    /* Wait till PLL is used as system clock source. */
+    while (RCC_GetSYSCLKSource() != 0x08)
+    {
+    }
 
-	/* Enable GPIOA, GPIOB, GPIOC, GPIOD, GPIOE and AFIO clocks */
-	RCC_APB2PeriphClockCmd(	RCC_APB2Periph_GPIOA | RCC_APB2Periph_GPIOB |RCC_APB2Periph_GPIOC
-							| RCC_APB2Periph_GPIOD | RCC_APB2Periph_GPIOE | RCC_APB2Periph_AFIO, ENABLE );
+    /* Enable GPIOA, GPIOB, GPIOC, GPIOD, GPIOE and AFIO clocks */
+    RCC_APB2PeriphClockCmd(RCC_APB2Periph_GPIOA | RCC_APB2Periph_GPIOB | RCC_APB2Periph_GPIOC | RCC_APB2Periph_AFIO,
+                           ENABLE);
 
-	/* SPI2 Periph clock enable */
-	RCC_APB1PeriphClockCmd( RCC_APB1Periph_SPI2, ENABLE );
+    /* SPI2 Periph clock enable */
+    // RCC_APB1PeriphClockCmd( RCC_APB1Periph_SPI2, ENABLE );
 
+    /* Set the Vector Table base address at 0x08000000 */
+    NVIC_SetVectorTable(NVIC_VectTab_FLASH, 0x0);
 
-	/* Set the Vector Table base address at 0x08000000 */
-	NVIC_SetVectorTable( NVIC_VectTab_FLASH, 0x0 );
+    NVIC_PriorityGroupConfig(NVIC_PriorityGroup_4);
 
-	NVIC_PriorityGroupConfig( NVIC_PriorityGroup_4 );
+    /* Configure HCLK clock as SysTick clock source. */
+    SysTick_CLKSourceConfig(SysTick_CLKSource_HCLK);
 
-	/* Configure HCLK clock as SysTick clock source. */
-	SysTick_CLKSourceConfig( SysTick_CLKSource_HCLK );
+    xSerialPortInitMinimal(USART2, &uart2_handle, 115200, 64);
 
-	vParTestInitialise();
+    GPIO_InitStructure.GPIO_Pin = GPIO_Pin_12 | GPIO_Pin_11 | GPIO_Pin_5 | GPIO_Pin_7;
+    GPIO_InitStructure.GPIO_Speed = GPIO_Speed_50MHz;
+    GPIO_InitStructure.GPIO_Mode = GPIO_Mode_Out_PP;
+    GPIO_Init(GPIOA, &GPIO_InitStructure);
+
+    /*Initial for led and BL*/
+    GPIO_InitStructure.GPIO_Pin = GPIO_Pin_7 | GPIO_Pin_8;
+    GPIO_InitStructure.GPIO_Speed = GPIO_Speed_50MHz;
+    GPIO_InitStructure.GPIO_Mode = GPIO_Mode_Out_PP;
+    GPIO_Init(GPIOC, &GPIO_InitStructure);
+
+    /*Initial for PWKEY*/
+    GPIO_InitStructure.GPIO_Pin = GPIO_Pin_0;
+    GPIO_InitStructure.GPIO_Speed = GPIO_Speed_50MHz;
+    GPIO_InitStructure.GPIO_Mode = GPIO_Mode_Out_PP;
+    GPIO_Init(GPIOB, &GPIO_InitStructure);
+    // vParTestInitialise();
 }
 /*-----------------------------------------------------------*/
 
-static void prvConfigureLCD( void )
+void error_lcd_printf()
 {
-GPIO_InitTypeDef GPIO_InitStructure;
-
-	/* Configure LCD Back Light (PA8) as output push-pull */
-	GPIO_InitStructure.GPIO_Pin = GPIO_Pin_8;
-	GPIO_InitStructure.GPIO_Speed = GPIO_Speed_50MHz;
-	GPIO_InitStructure.GPIO_Mode = GPIO_Mode_Out_PP;
-	GPIO_Init( GPIOA, &GPIO_InitStructure );
-
-	/* Set the Backlight Pin */
-	GPIO_WriteBit(GPIOA, GPIO_Pin_8, Bit_SET);
-
-	/* Initialize the LCD */
-	LCD_Init();
-
-	/* Set the Back Color */
-	LCD_SetBackColor( White );
-
-	/* Set the Text Color */
-	LCD_SetTextColor( 0x051F );
-
-	LCD_Clear();
+    LCD_write_string(0, 3, "FAIL...");
+    while (TRUE)
+        ;
 }
-/*-----------------------------------------------------------*/
-
-int fputc( int ch, FILE *f )
+int fputc(int ch, FILE *f)
 {
-static unsigned short usColumn = 0, usRefColumn = mainCOLUMN_START;
-static unsigned char ucLine = 0;
+    /* Place your implementation of fputc here */
+    /* e.g. write a character to the USART */
+    xSerialPutChar(&uart2_handle, ch, 0);
 
-	if( ( usColumn == 0 ) && ( ucLine == 0 ) )
-	{
-		LCD_Clear();
-	}
-
-	if( ch != '\n' )
-	{
-		/* Display one character on LCD */
-		LCD_DisplayChar( ucLine, usRefColumn, (u8) ch );
-
-		/* Decrement the column position by 16 */
-		usRefColumn -= mainCOLUMN_INCREMENT;
-
-		/* Increment the character counter */
-		usColumn++;
-		if( usColumn == mainMAX_COLUMN )
-		{
-			ucLine += mainROW_INCREMENT;
-			usRefColumn = mainCOLUMN_START;
-			usColumn = 0;
-		}
-	}
-	else
-	{
-		/* Move back to the first column of the next line. */
-		ucLine += mainROW_INCREMENT;
-		usRefColumn = mainCOLUMN_START;
-		usColumn = 0;
-	}
-
-	/* Wrap back to the top of the display. */
-	if( ucLine >= mainMAX_LINE )
-	{
-		ucLine = 0;
-	}
-
-	return ch;
+    return ch;
 }
 /*-----------------------------------------------------------*/
 
-#ifdef  DEBUG
+#ifdef DEBUG
 /* Keep the linker happy. */
-void assert_failed( unsigned char* pcFile, unsigned long ulLine )
+void assert_failed(unsigned char *pcFile, unsigned long ulLine)
 {
-	for( ;; )
-	{
-	}
+    for (;;)
+    {
+    }
 }
 #endif
