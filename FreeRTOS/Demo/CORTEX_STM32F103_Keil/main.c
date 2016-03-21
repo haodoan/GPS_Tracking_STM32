@@ -120,8 +120,8 @@
 #define mainGPRS_TASK_PRIORITY (tskIDLE_PRIORITY + 4)
 #define mainLED_TASK_PRIORITY (tskIDLE_PRIORITY)
 /* The check task uses the sprintf function so requires a little more stack. */
-#define mainGPS_TASK_STACK_SIZE (configMINIMAL_STACK_SIZE + 200)
-#define mainGPRS_TASK_STACK_SIZE (configMINIMAL_STACK_SIZE + 200)
+#define mainGPS_TASK_STACK_SIZE (configMINIMAL_STACK_SIZE + 128)
+#define mainGPRS_TASK_STACK_SIZE (configMINIMAL_STACK_SIZE + 128)
 #define mainLED_TASK_STACK_SIZE (configMINIMAL_STACK_SIZE)
 /* The time between cycles of the 'check' task. */
 #define mainGPS_DELAY ((TickType_t)5000 / portTICK_PERIOD_MS)
@@ -136,7 +136,7 @@
 #define GPRS_BLOCK_TIME 5000
 #define GPRS_BUFFER_SIZE 200
 
-#define GPS_BLOCK_TIME 0
+#define GPS_BLOCK_TIME 5000
 /*-----------------------------------------------------------*/
 
 /*
@@ -244,6 +244,8 @@ int main(void)
 /*GPS task*/
 static void vGPSTask(void *pvParameters)
 {
+    char LCD_GPS[20];
+    static char gps_cnt=0;
     GPS_INFO vGPSinfo;
     //	TickType_t xLastExecutionTime;
     // char buff_receive[20];
@@ -280,9 +282,10 @@ static void vGPSTask(void *pvParameters)
         }
         if (xQueueSend(SIM908_queue, &vGPSinfo, GPS_BLOCK_TIME) != pdPASS)
         {
-            LCD_write_string(0, 3, "Queue fully...");
+            LCD_write_string(0, 3, "Queue fully         ");
         }
-
+        sprintf( LCD_GPS,"gps %d             ",gps_cnt++);
+        LCD_write_string(0, 3, LCD_GPS);    
         vTaskDelay(5000);
     }
 }
@@ -300,10 +303,9 @@ static void vGPRSTask(void *pvParameters)
     Config_GPRS_SIM908();
     // printf("ATD+84944500186;\r");
     LCD_write_string(0, 3, "Connecting...");
-    vTCP_status = TCP_Connect((char *)IP_SERVER, (char *)PORT);
-    (vTCP_status == TCP_CONNECT_SUCCESS) ? LCD_write_string(0, 3, "Connect OK...") : LCD_write_string(0, 3, "Connect FAIL");
+    vTCP_status = TCP_Connect((char *)IP_SERVER, (char *)PORT,60000);
+   (vTCP_status == TCP_CONNECT_SUCCESS) ? LCD_write_string(0, 3, "Connect OK...") : LCD_write_string(0, 3, "Connect FAIL");
     
-//    GetIMEI(vGPSinfo.IMEI);
     xTaskCreate(vGPSTask, "GPS", mainGPS_TASK_STACK_SIZE, NULL, mainGPS_TASK_PRIORITY, NULL);
 
     for (;;)
@@ -343,11 +345,16 @@ static void vGPRSTask(void *pvParameters)
         }
         else
         {
-            if (TCP_CONNECT_SUCCESS == TCP_Connect((char *)IP_SERVER, (char *)PORT))
+            LCD_write_string(0, 3, "CONNECTing...");
+            if (TCP_CONNECT_SUCCESS == TCP_Connect((char *)IP_SERVER, (char *)PORT,20000))
             {
                 LCD_write_string(0, 3, "RE-CONNECT OK...");
-                TCP_Send(gprs_buffer);
+                //TCP_Send(gprs_buffer);
             }
+            LCD_write_string(0, 3, "CONNECT FAIL...");
+            vTaskDelay(500);
+            //taskYIELD();
+            
         }
     }
 }

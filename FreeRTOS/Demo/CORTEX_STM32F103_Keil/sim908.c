@@ -66,10 +66,14 @@ int8_t sendATcommand(char *ATcommand, char *expected_answer, unsigned int timeou
             return pdFALSE;
         }
 
-        if (strstr(buffer_response, expected_answer) == NULL)
+        if (strstr(buffer_response, "OK"))
         {
-            xSemaphoreGive( xMutex );
-            return pdFALSE;
+            GetResponse(buffer_response, timeout);
+            if (strstr(buffer_response, expected_answer) == NULL)
+            {
+                xSemaphoreGive( xMutex );
+                return pdFALSE;
+            }
         }
         xSemaphoreGive( xMutex );
     }
@@ -190,7 +194,7 @@ void Config_GPRS_SIM908(void)
 {
     //    sendATcommand("AT+CIPCSGP=1,\"v-internet\",\"\",\"\"","OK", 2000); // For Viettel Network
     // VinaPhone
-    sendATcommand("AT+CIPCSGP=1,\"3m-world\",\"mms\",\"mms\"", "OK", 2000); // For Vina Network
+    sendATcommand2("AT+CIPCSGP=1,\"3m-world\",\"mms\",\"mms\"", "OK", 2000); // For Vina Network
 }
 
 /*FUNCTION**********************************************************************
@@ -207,7 +211,7 @@ TCP_STATUS TCP_Connect(char *IP_address, char *Port,uint32_t timeout)
     memset(command, '\0', 50);
     sendATcommand2("AT+CIPSHUT", "SHUT OK", 5000);
     sprintf(command, "AT+CIPSTART=\"TCP\",\"%s\",\"%s\"", IP_address, Port);
-    if (pdTRUE == sendATcommand2(command,"CONNECT OK", timeout))
+    if (pdTRUE == sendATcommand(command,"CONNECT OK", timeout))
     {
         return TCP_CONNECT_SUCCESS;
     }
@@ -255,7 +259,7 @@ TCP_STATUS TCP_Send(char *data_string)
 TCP_STATUS TCP_GetStatus(void)
 {
 
-    if (pdTRUE == sendATcommand2("AT+CIPSTATUS", "CONNECT OK", 5000))
+    if (pdTRUE == sendATcommand2("AT+CIPSTATUS", "CONNECT OK", 2000))
     {
         return TCP_CONNECT_SUCCESS;
     }
