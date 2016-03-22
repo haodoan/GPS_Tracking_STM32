@@ -392,7 +392,7 @@ void GetCellid(GPS_INFO  *info_cellid )
     
     if( xSemaphoreTake( xMutex, ( TickType_t ) portMAX_DELAY ) == pdTRUE )
     {
-        memset(DATA_AT , '\0' , 50);
+        memset(DATA_AT , '\0' , sizeof(DATA_AT));
         while(pdTRUE == xSerialGetChar(&uart2_handle, &SIM_RxChar,100));        
         printf("AT+CREG?\r");
         if(GetResponse(buff, 2000))
@@ -402,6 +402,7 @@ void GetCellid(GPS_INFO  *info_cellid )
             strcpy(info_cellid->CELLID ,strtok (DATA_AT[3],"\""));
             strcpy(info_cellid->latitude ,"0.00");
             strcpy(info_cellid->longtitude ,"0.00");
+            strcpy(info_cellid->date ,"0");
         }
         xSemaphoreGive( xMutex );
     }

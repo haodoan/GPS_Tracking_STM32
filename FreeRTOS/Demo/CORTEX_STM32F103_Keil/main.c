@@ -206,16 +206,17 @@ int main(void)
     LCD_write_string(0, 3, "GPS Tracking..");
 
     SIM908_queue = xQueueCreate(20, sizeof(GPS_INFO));
-
+    if (SIM908_queue == NULL)
+    {
+        LCD_write_string(0, 3, "QUEUE MEM fAIL");
+        while (TRUE)
+            ;
+    }
     SIM908_Mutex = xSemaphoreCreateMutex();
     if( SIM908_Mutex == NULL )
     {
+        LCD_write_string(0, 3, "MUTEX MEM fAIL");
         while(1);
-    }
-    if (SIM908_queue == NULL)
-    {
-        while (TRUE)
-            ;
     }
 
     /* Start the tasks defined within this file/specific to this demo. */
@@ -245,14 +246,10 @@ static void vGPSTask(void *pvParameters)
     char LCD_GPS[20];
     static char gps_cnt=0;
     GPS_INFO vGPSinfo;
-    //	TickType_t xLastExecutionTime;
-    // char buff_receive[20];
-    //	xLastExecutionTime = xTaskGetTickCount();
-    //  printf("vGPSTask\r\n");
-    // printf("ATD+84944500186;\r");
-    //LCD_write_string(0, 3, "GPS task...");
+    
+    /*GPS Power ON*/
     GPS_PWR();
-    /*get imei umber of module*/
+    /*get imei number of module*/
     GetIMEI(vGPSinfo.IMEI);
 
     vGPSinfo.MCC = 452;
@@ -280,9 +277,9 @@ static void vGPSTask(void *pvParameters)
         }
         if (xQueueSend(SIM908_queue, &vGPSinfo, GPS_BLOCK_TIME) != pdPASS)
         {
-            LCD_write_string(0, 3, "Queue fully         ");
+            LCD_write_string(0, 3, "Queue fully        ");
         }
-        sprintf( LCD_GPS,"gps %d             ",gps_cnt++);
+        sprintf( LCD_GPS,"GPS send %d        ",gps_cnt++);
         LCD_write_string(0, 3, LCD_GPS);    
         vTaskDelay(5000);
     }
@@ -308,17 +305,17 @@ static void vGPRSTask(void *pvParameters)
 
     for (;;)
     {
-        if (TCP_CONNECT_SUCCESS == TCP_GetStatus())
+        if (TCP_CONNECT_SUCCESS == TCP_GetStatus()) // CONNECT SERVER OK
         {
-            if (xQueueReceive(SIM908_queue, &vGPSinfo, GPRS_BLOCK_TIME))
+            if (xQueueReceive(SIM908_queue, &vGPSinfo, GPRS_BLOCK_TIME)) // Receive data from GPS task
             {
-                if (vGPSinfo.FIX == pdFALSE)
+                if (vGPSinfo.FIX == pdFALSE) // GPS not fix
                 {
                     memset(gprs_buffer, '\0', sizeof(gprs_buffer) / sizeof(char));
                     sprintf(gprs_buffer, "%s,0,%s,%d,%d,%s,%s,%s\r\n", GPRS_HEAD_CMD, vGPSinfo.IMEI, vGPSinfo.MCC,
                         vGPSinfo.MNC,vGPSinfo.LAC,vGPSinfo.CELLID, GPRS_END_CMD);
                 }
-                else
+                else // GPS fix
                 {
                     memset(gprs_buffer, '\0', sizeof(gprs_buffer) / sizeof(char));
                     sprintf(gprs_buffer, "%s,1,%s,%s,%s,%s,%s\r\n", GPRS_HEAD_CMD, vGPSinfo.IMEI,vGPSinfo.date,vGPSinfo.latitude,
@@ -330,28 +327,28 @@ static void vGPRSTask(void *pvParameters)
                     {
                         char lcd_buff_out[20];
                         sprintf(lcd_buff_out, "Send OK : %d    ", lcd_cnt++);
-                        LCD_write_string(0, 3, lcd_buff_out);
+                        LCD_write_string(0, 4, lcd_buff_out);
                     }
                     else
                     {
-                        LCD_write_string(0, 3, "Send FAIL");
+                        LCD_write_string(0, 4, "Send FAIL");
                     }
 
                      xSemaphoreGive( SIM908_Mutex );
                 }
             }
         }
-        else
+        else // CONNECT FAIL
         {
-            LCD_write_string(0, 3, "CONNECTing...");
+            LCD_write_string(0, 4, "CONNECTING...");
+            /*Re-connect server*/
             if (TCP_CONNECT_SUCCESS == TCP_Connect((char *)IP_SERVER, (char *)PORT,20000))
             {
-                LCD_write_string(0, 3, "RE-CONNECT OK...");
-                //TCP_Send(gprs_buffer);
+                LCD_write_string(0, 4, "RE-CONNECT OK...");
             }
-            LCD_write_string(0, 3, "CONNECT FAIL...");
+            LCD_write_string(0, 4, "CONNECT FAIL...");
+            /*Switch to GPS task*/
             vTaskDelay(500);
-            //taskYIELD();
             
         }
     }
