@@ -28,7 +28,7 @@ typedef struct gps_info_t
     char CELLID[6];
     uint16_t  MNC;
     uint16_t  MCC;
-    uint32_t  fix;
+    uint32_t  FIX;
 }GPS_INFO;
 #define MAX_LENGH_STR  100
 #define SIM908_PWRON   GPIO_WriteBit(GPIOB, GPIO_Pin_0, Bit_SET)
@@ -36,8 +36,8 @@ typedef struct gps_info_t
 #define delay_ms(x)    vTaskDelay(x)
 
 uint8_t GetResponse(char *buff_receive, uint32_t timeout);
-int8_t sendATcommand(char *ATcommand, char *expected_answer, unsigned int timeout);
-int8_t sendATcommand2(char *ATcommand, char *expected_answer,unsigned int timeout);
+int8_t SendATcommand(char *ATcommand, char *expected_answer, unsigned int timeout);
+int8_t SendATcommand2(char *ATcommand,char *expected_answer,char *expected_answer2, unsigned int timeout);
 uint8_t start_GPS(void);
 BaseType_t Wait_GPS_Fix(void);
 uint8_t get_GPS(GPS_INFO *vGPSinfo);

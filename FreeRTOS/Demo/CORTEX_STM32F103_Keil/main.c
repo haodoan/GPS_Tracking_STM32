@@ -203,6 +203,7 @@ int main(void)
 
     LCD_init();
     LCD_clear();
+    LCD_write_string(0, 2, "    DEMO      ");
     LCD_write_string(0, 3, "GPS Tracking..");
 
     SIM908_queue = xQueueCreate(20, sizeof(GPS_INFO));
@@ -277,9 +278,9 @@ static void vGPSTask(void *pvParameters)
         }
         if (xQueueSend(SIM908_queue, &vGPSinfo, GPS_BLOCK_TIME) != pdPASS)
         {
-            LCD_write_string(0, 3, "Queue fully        ");
+            LCD_write_string(0, 3, "Queue fully   ");
         }
-        sprintf( LCD_GPS,"GPS send %d        ",gps_cnt++);
+        sprintf( LCD_GPS,"GPS  send %d  ",gps_cnt++);
         LCD_write_string(0, 3, LCD_GPS);    
         vTaskDelay(5000);
     }
@@ -326,12 +327,12 @@ static void vGPRSTask(void *pvParameters)
                     if (TCP_SEND_SUCCESS == TCP_Send(gprs_buffer))
                     {
                         char lcd_buff_out[20];
-                        sprintf(lcd_buff_out, "Send OK : %d    ", lcd_cnt++);
+                        sprintf(lcd_buff_out, "GPRS Send %d  ", lcd_cnt++);
                         LCD_write_string(0, 4, lcd_buff_out);
                     }
                     else
                     {
-                        LCD_write_string(0, 4, "Send FAIL");
+                        LCD_write_string(0, 4, "Send FAIL     ");
                     }
 
                      xSemaphoreGive( SIM908_Mutex );
@@ -344,9 +345,9 @@ static void vGPRSTask(void *pvParameters)
             /*Re-connect server*/
             if (TCP_CONNECT_SUCCESS == TCP_Connect((char *)IP_SERVER, (char *)PORT,20000))
             {
-                LCD_write_string(0, 4, "RE-CONNECT OK...");
+                LCD_write_string(0, 4, "RE-CONNECT OK..");
             }
-            LCD_write_string(0, 4, "CONNECT FAIL...");
+            LCD_write_string(0, 4, "CONNECT FAIL..");
             /*Switch to GPS task*/
             vTaskDelay(500);
             

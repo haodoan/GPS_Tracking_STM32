@@ -85,11 +85,11 @@
         </option>
         <option>
           <name>OCDynDriverList</name>
-          <state>JLINK_ID</state>
+          <state>STLINK_ID</state>
         </option>
         <option>
           <name>OCLastSavedByProductVersion</name>
-          <state>7.40.5.9734</state>
+          <state>7.50.3.10745</state>
         </option>
         <option>
           <name>OCDownloadAttachToProgram</name>
@@ -1068,7 +1068,7 @@
       <name>PEMICRO_ID</name>
       <archiveVersion>2</archiveVersion>
       <data>
-        <version>1</version>
+        <version>2</version>
         <wantNonLocal>1</wantNonLocal>
         <debug>1</debug>
         <option>
@@ -1078,19 +1078,6 @@
         <option>
           <name>OCPEMicroAttachSlave</name>
           <state>1</state>
-        </option>
-        <option>
-          <name>CCPEMicroInterfaceList</name>
-          <version>0</version>
-          <state>0</state>
-        </option>
-        <option>
-          <name>CCPEMicroResetDelay</name>
-          <state></state>
-        </option>
-        <option>
-          <name>CCPEMicroJtagSpeed</name>
-          <state>#UNINITIALIZED#</state>
         </option>
         <option>
           <name>CCJPEMicroShowSettings</name>
@@ -1103,36 +1090,6 @@
         <option>
           <name>LogFile</name>
           <state>$PROJ_DIR$\cspycomm.log</state>
-        </option>
-        <option>
-          <name>CCPEMicroUSBDevice</name>
-          <version>0</version>
-          <state>0</state>
-        </option>
-        <option>
-          <name>CCPEMicroSerialPort</name>
-          <version>0</version>
-          <state>0</state>
-        </option>
-        <option>
-          <name>CCJPEMicroTCPIPAutoScanNetwork</name>
-          <state>1</state>
-        </option>
-        <option>
-          <name>CCPEMicroTCPIP</name>
-          <state>10.0.0.1</state>
-        </option>
-        <option>
-          <name>CCPEMicroCommCmdLineProducer</name>
-          <state>0</state>
-        </option>
-        <option>
-          <name>CCSTLinkInterfaceRadio</name>
-          <state>0</state>
-        </option>
-        <option>
-          <name>CCSTLinkInterfaceCmdLine</name>
-          <state>0</state>
         </option>
       </data>
     </settings>
@@ -1202,11 +1159,11 @@
         <debug>1</debug>
         <option>
           <name>OCDriverInfo</name>
-          <state>1</state>
+          <state>0</state>
         </option>
         <option>
           <name>CCSTLinkInterfaceRadio</name>
-          <state>0</state>
+          <state>1</state>
         </option>
         <option>
           <name>CCSTLinkInterfaceCmdLine</name>
@@ -1487,6 +1444,10 @@
         <loadFlag>0</loadFlag>
       </plugin>
       <plugin>
+        <file>$TOOLKIT_DIR$\plugins\middleware\PercepioTraceExporter\PercepioTraceExportPlugin.ewplugin</file>
+        <loadFlag>0</loadFlag>
+      </plugin>
+      <plugin>
         <file>$TOOLKIT_DIR$\plugins\rtos\AVIX\AVIX.ENU.ewplugin</file>
         <loadFlag>0</loadFlag>
       </plugin>
@@ -1508,7 +1469,7 @@
       </plugin>
       <plugin>
         <file>$TOOLKIT_DIR$\plugins\rtos\OpenRTOS\OpenRTOSPlugin.ewplugin</file>
-        <loadFlag>0</loadFlag>
+        <loadFlag>1</loadFlag>
       </plugin>
       <plugin>
         <file>$TOOLKIT_DIR$\plugins\rtos\Quadros\Quadros_EWB7_Plugin.ewplugin</file>
