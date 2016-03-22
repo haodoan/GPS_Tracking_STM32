@@ -150,8 +150,6 @@ static void prvSetupHardware(void);
  * access the LCD directly.  Other tasks wanting to display a message send
  * the message to the gatekeeper.
  */
-static void vLEDTask(void *pvParameters);
-
 /*
  * Retargets the C library printf function to the USART.
  */
@@ -267,14 +265,14 @@ static void vGPSTask(void *pvParameters)
             if (pdTRUE == Wait_GPS_Fix())
             {
                 LCD_write_string(0, 0, "Fix        ");
-                vGPSinfo.fix  = pdTRUE;
+                vGPSinfo.FIX  = pdTRUE;
                 //memset(&vGPSinfo, '\0', sizeof(GPS_INFO));
                 get_GPS(&vGPSinfo);
             }
             else // get cell id
             {
                 LCD_write_string(0, 0, "Not Fix");
-                vGPSinfo.fix = pdFALSE;
+                vGPSinfo.FIX = pdFALSE;
                 //memset(&vGPSinfo, '\0', sizeof(GPS_INFO));
                 GetCellid(&vGPSinfo);
             }
@@ -314,7 +312,7 @@ static void vGPRSTask(void *pvParameters)
         {
             if (xQueueReceive(SIM908_queue, &vGPSinfo, GPRS_BLOCK_TIME))
             {
-                if (vGPSinfo.fix == pdFALSE)
+                if (vGPSinfo.FIX == pdFALSE)
                 {
                     memset(gprs_buffer, '\0', sizeof(gprs_buffer) / sizeof(char));
                     sprintf(gprs_buffer, "%s,0,%s,%d,%d,%s,%s,%s\r\n", GPRS_HEAD_CMD, vGPSinfo.IMEI, vGPSinfo.MCC,
