@@ -226,13 +226,13 @@ TCP_STATUS TCP_Connect(char *IP_address, char *Port,uint32_t timeout)
  *END**************************************************************************/
 TCP_STATUS TCP_Send(char *data_string)
 {
-    // char data_ctrl_z[120];
-    char *data_ctrl_z;
+    char data_ctrl_z[120];
+    //char *data_ctrl_z;
     TCP_STATUS status;
 
-    data_ctrl_z = malloc(strlen(data_string) + 2);
+    //data_ctrl_z = pvPortMalloc(strlen(data_string) + 2);//malloc(strlen(data_string) + 2);
 
-    if(data_ctrl_z == NULL) {return TCP_FAIL_MEM;}
+    //if(data_ctrl_z == NULL) {return TCP_FAIL_MEM;}
 
     // memset(data_ctrl_z , '\0',120);
     if (pdTRUE == SendATcommand("AT+CIPSEND", ">", 10000))
@@ -251,7 +251,7 @@ TCP_STATUS TCP_Send(char *data_string)
     {
         status = TCP_SEND_FAIL;
     }
-    free(data_ctrl_z);
+    //vPortFree(data_ctrl_z);
 
     return status;
 }

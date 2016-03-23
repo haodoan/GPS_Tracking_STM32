@@ -120,8 +120,8 @@
 #define mainGPRS_TASK_PRIORITY (tskIDLE_PRIORITY + 4)
 #define mainLED_TASK_PRIORITY (tskIDLE_PRIORITY)
 /* The check task uses the sprintf function so requires a little more stack. */
-#define mainGPS_TASK_STACK_SIZE (configMINIMAL_STACK_SIZE + 250)
-#define mainGPRS_TASK_STACK_SIZE (configMINIMAL_STACK_SIZE + 250)
+#define mainGPS_TASK_STACK_SIZE (configMINIMAL_STACK_SIZE + 128)
+#define mainGPRS_TASK_STACK_SIZE (configMINIMAL_STACK_SIZE + 128)
 #define mainLED_TASK_STACK_SIZE (configMINIMAL_STACK_SIZE)
 /* The time between cycles of the 'check' task. */
 #define mainGPS_DELAY ((TickType_t)5000 / portTICK_PERIOD_MS)
@@ -249,31 +249,31 @@ static void vGPSTask(void *pvParameters)
 
     for (;;)
     {
-//        if( xSemaphoreTake( SIM908_Mutex, ( TickType_t ) portMAX_DELAY ) == pdTRUE )
-//        {
-//            if (pdTRUE == Wait_GPS_Fix())
-//            {
-//                LCD_write_string(0, 0, "Fix        ");
-//                vGPSinfo.FIX  = pdTRUE;
-//                //memset(&vGPSinfo, '\0', sizeof(GPS_INFO));
-//                get_GPS(&vGPSinfo);
-//            }
-//            else // get cell id
-//            {
-//                LCD_write_string(0, 0, "Not Fix");
-//                vGPSinfo.FIX = pdFALSE;
-//                //memset(&vGPSinfo, '\0', sizeof(GPS_INFO));
-//                GetCellid(&vGPSinfo);
-//            }
-//            xSemaphoreGive( SIM908_Mutex );
-//        }
-//        if (xQueueSend(SIM908_queue, &vGPSinfo, GPS_BLOCK_TIME) != pdPASS)
-//        {
-//            LCD_write_string(0, 3, "Queue fully   ");
-//        }
+        if( xSemaphoreTake( SIM908_Mutex, ( TickType_t ) portMAX_DELAY ) == pdTRUE )
+        {
+            if (pdTRUE == Wait_GPS_Fix())
+            {
+                LCD_write_string(0, 0, "Fix        ");
+                vGPSinfo.FIX  = pdTRUE;
+                //memset(&vGPSinfo, '\0', sizeof(GPS_INFO));
+                get_GPS(&vGPSinfo);
+            }
+            else // get cell id
+            {
+                LCD_write_string(0, 0, "Not Fix");
+                vGPSinfo.FIX = pdFALSE;
+                //memset(&vGPSinfo, '\0', sizeof(GPS_INFO));
+                GetCellid(&vGPSinfo);
+            }
+            xSemaphoreGive( SIM908_Mutex );
+        }
+        if (xQueueSend(SIM908_queue, &vGPSinfo, GPS_BLOCK_TIME) != pdPASS)
+        {
+            LCD_write_string(0, 3, "Queue fully   ");
+        }
         sprintf( LCD_GPS,"GPS  send %d  ",gps_cnt++);
         LCD_write_string(0, 3, LCD_GPS);    
-        vTaskDelay(1000);
+        vTaskDelay(5000);
     }
 }
 /*GPRS task*/
@@ -297,7 +297,7 @@ static void vGPRSTask(void *pvParameters)
 
     for (;;)
     {
-        if (0)//(TCP_CONNECT_SUCCESS == TCP_GetStatus()) // CONNECT SERVER OK
+        if(TCP_CONNECT_SUCCESS == TCP_GetStatus()) // CONNECT SERVER OK
         {
             if (xQueueReceive(SIM908_queue, &vGPSinfo, GPRS_BLOCK_TIME)) // Receive data from GPS task
             {
@@ -332,16 +332,18 @@ static void vGPRSTask(void *pvParameters)
         }
         else // CONNECT FAIL
         {
-            TCP_Send("1234567890\r");
-//            LCD_write_string(0, 4, "CONNECTING...");
-//            /*Re-connect server*/
-//            if (TCP_CONNECT_SUCCESS == TCP_Connect((char *)IP_SERVER, (char *)PORT,20000))
-//            {
-//                LCD_write_string(0, 4, "RE-CONNECT OK..");
-//            }
-//            LCD_write_string(0, 4, "CONNECT FAIL..");
-            /*Switch to GPS task*/
-            vTaskDelay(500);
+            LCD_write_string(0, 4, "CONNECTING...");
+            /*Re-connect server*/
+            if (TCP_CONNECT_SUCCESS == TCP_Connect((char *)IP_SERVER, (char *)PORT,20000))
+            {
+                LCD_write_string(0, 4, "RE-CONNECT OK..");
+            }
+            else
+            {
+              LCD_write_string(0, 4, "CONNECT FAIL..");
+              /*Switch to GPS task*/
+              vTaskDelay(500);
+            }
             
         }
     }
