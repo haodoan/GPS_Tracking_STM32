@@ -55,6 +55,7 @@ int8_t SendATcommand2(char *ATcommand,char *expected_answer,char *expected_answe
 {
     char buffer_response[MAX_LENGH_STR];
     signed char SIM_RxChar;
+    uint32_t error = pdTRUE;
 
     if( xSemaphoreTake( xMutex, ( TickType_t ) portMAX_DELAY ) == pdTRUE )
     {
@@ -62,23 +63,23 @@ int8_t SendATcommand2(char *ATcommand,char *expected_answer,char *expected_answe
         printf("%s\r", ATcommand); // Send the AT command
         if (pdFALSE == GetResponse(buffer_response, timeout))
         {
-            xSemaphoreGive( xMutex );
-            return pdFALSE;
+            error = pdFALSE;
         }
-
-        if (strstr(buffer_response, expected_answer))
+        else
         {
-            GetResponse(buffer_response, timeout);
-            if (strstr(buffer_response, expected_answer2) == NULL)
+            if (strstr(buffer_response, expected_answer))
             {
-                xSemaphoreGive( xMutex );
-                return pdFALSE;
-            }
+                GetResponse(buffer_response, timeout);
+                if (strstr(buffer_response, expected_answer2) == NULL)
+                {
+                    error = pdFALSE;
+                }
+            }        
         }
-        xSemaphoreGive( xMutex );
+        xSemaphoreGive( xMutex );        
     }
-
-    return pdTRUE;
+       
+    return error;
 }
 
 int8_t SendATcommand(char *ATcommand, char *expected_answer,unsigned int timeout)
@@ -88,6 +89,7 @@ int8_t SendATcommand(char *ATcommand, char *expected_answer,unsigned int timeout
     signed char SIM_RxChar;
     char cPassMessage[MAX_LENGH_STR];
 
+    memset(cPassMessage,'\0',MAX_LENGH_STR);
     if( xSemaphoreTake( xMutex, ( TickType_t ) portMAX_DELAY ) == pdTRUE )
     {
         while(pdTRUE == xSerialGetChar(&uart2_handle, &SIM_RxChar,200));
@@ -226,13 +228,13 @@ TCP_STATUS TCP_Connect(char *IP_address, char *Port,uint32_t timeout)
  *END**************************************************************************/
 TCP_STATUS TCP_Send(char *data_string)
 {
-    char data_ctrl_z[120];
-    //char *data_ctrl_z;
+    //char data_ctrl_z[120];
+    char *data_ctrl_z;
     TCP_STATUS status;
 
-    //data_ctrl_z = pvPortMalloc(strlen(data_string) + 2);//malloc(strlen(data_string) + 2);
+    data_ctrl_z = pvPortMalloc(strlen(data_string) + 2);//malloc(strlen(data_string) + 2);
 
-    //if(data_ctrl_z == NULL) {return TCP_FAIL_MEM;}
+    if(data_ctrl_z == NULL) {return TCP_FAIL_MEM;}
 
     // memset(data_ctrl_z , '\0',120);
     if (pdTRUE == SendATcommand("AT+CIPSEND", ">", 10000))
@@ -251,7 +253,7 @@ TCP_STATUS TCP_Send(char *data_string)
     {
         status = TCP_SEND_FAIL;
     }
-    //vPortFree(data_ctrl_z);
+    vPortFree(data_ctrl_z);
 
     return status;
 }

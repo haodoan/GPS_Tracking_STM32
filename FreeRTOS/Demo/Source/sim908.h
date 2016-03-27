@@ -30,7 +30,7 @@ typedef struct gps_info_t
     uint16_t  MCC;
     uint32_t  FIX;
 }GPS_INFO;
-#define MAX_LENGH_STR  100
+#define MAX_LENGH_STR  128
 #define SIM908_PWRON   GPIO_WriteBit(GPIOB, GPIO_Pin_0, Bit_SET)
 #define SIM908_PWROFF  GPIO_WriteBit(GPIOB, GPIO_Pin_0, Bit_RESET)
 #define delay_ms(x)    vTaskDelay(x)
@@ -53,3 +53,4 @@ uint8_t GetAccount(void);
 void GetCellid(GPS_INFO  *info_cellid );
 void GetCmdDataSIM(char *str , char DATA_AT[5][10]);
 uint8_t GetIMEI(char * imei);
+int8_t TCPSendATcommand(char *ATcommand, char *expected_answer,unsigned int timeout);

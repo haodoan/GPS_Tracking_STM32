@@ -131,7 +131,8 @@
 #define GPRS_END_CMD "$$$$"
 
 //#define IP_SERVER "42.115.190.28"
-#define IP_SERVER  "118.71.231.148"
+//#define IP_SERVER  "118.71.231.148"
+#define IP_SERVER "42.112.151.79"
 #define PORT "8888"
 #define GPRS_BLOCK_TIME 5000
 #define GPRS_BUFFER_SIZE 200
@@ -304,13 +305,13 @@ static void vGPRSTask(void *pvParameters)
                 if (vGPSinfo.FIX == pdFALSE) // GPS not fix
                 {
                     memset(gprs_buffer, '\0', sizeof(gprs_buffer) / sizeof(char));
-                    sprintf(gprs_buffer, "%s,0,%s,%d,%d,%s,%s,%s\r\n", GPRS_HEAD_CMD, vGPSinfo.IMEI, vGPSinfo.MCC,
+                    sprintf(gprs_buffer, "%s,%s,0,0,%d,%d,%s,%s,0,0,0,%s\r\n", GPRS_HEAD_CMD, vGPSinfo.IMEI, vGPSinfo.MCC,
                         vGPSinfo.MNC,vGPSinfo.LAC,vGPSinfo.CELLID, GPRS_END_CMD);
                 }
                 else // GPS fix
                 {
                     memset(gprs_buffer, '\0', sizeof(gprs_buffer) / sizeof(char));
-                    sprintf(gprs_buffer, "%s,1,%s,%s,%s,%s,%s\r\n", GPRS_HEAD_CMD, vGPSinfo.IMEI,vGPSinfo.date,vGPSinfo.latitude,
+                    sprintf(gprs_buffer, "%s,%s,1,%s,%s,%s,0,0,0,%s\r\n", GPRS_HEAD_CMD, vGPSinfo.IMEI,vGPSinfo.date,vGPSinfo.latitude,
                             vGPSinfo.longtitude,GPRS_END_CMD);
                 }
                 if( xSemaphoreTake( SIM908_Mutex, ( TickType_t ) portMAX_DELAY ) == pdTRUE )
@@ -324,6 +325,7 @@ static void vGPRSTask(void *pvParameters)
                     else
                     {
                         LCD_write_string(0, 4, "Send FAIL     ");
+
                     }
 
                      xSemaphoreGive( SIM908_Mutex );
@@ -408,7 +410,7 @@ static void prvSetupHardware(void)
     /* Configure HCLK clock as SysTick clock source. */
     SysTick_CLKSourceConfig(SysTick_CLKSource_HCLK);
 
-    xSerialPortInitMinimal(USART2, &uart2_handle, 115200, 64);
+    xSerialPortInitMinimal(USART2, &uart2_handle, 115200, MAX_LENGH_STR);
 
     GPIO_InitStructure.GPIO_Pin = GPIO_Pin_12 | GPIO_Pin_11 | GPIO_Pin_5 | GPIO_Pin_7;
     GPIO_InitStructure.GPIO_Speed = GPIO_Speed_50MHz;
