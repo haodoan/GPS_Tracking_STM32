@@ -26,6 +26,7 @@ extern void xPortPendSVHandler( void );
 extern void xPortSysTickHandler( void );
 extern void vTimer2IntHandler( void );
 extern void vUARTInterruptHandler( void );
+extern void vUART2InterruptHandler( void );
 extern void vPortSVCHandler( void );
 
 /* Private typedef -----------------------------------------------------------*/
@@ -99,7 +100,7 @@ const intvec_elem __vector_table[] =
   SPI1_IRQHandler,
   SPI2_IRQHandler,
   vUARTInterruptHandler,
-  USART2_IRQHandler,
+  vUART2InterruptHandler,
   USART3_IRQHandler,
   EXTI15_10_IRQHandler,
   RTCAlarm_IRQHandler,

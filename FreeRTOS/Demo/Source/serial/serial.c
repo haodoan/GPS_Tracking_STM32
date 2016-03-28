@@ -91,9 +91,8 @@ uart_rtos_handle_t uart2_handle;
 
 /* UART interrupt handler. */
 void vUARTInterruptHandler( void );
+void vUART2InterruptHandler( void );
 
-/* UART2 interrupt handler. */
-void USART2_IRQHandler(void);
 /*-----------------------------------------------------------*/
 
 /*
@@ -264,10 +263,10 @@ char cChar;
     portEND_SWITCHING_ISR( xHigherPriorityTaskWoken );
 }
 
-void USART2_IRQHandler( void )
+void vUART2InterruptHandler( void )
 {
-portBASE_TYPE xHigherPriorityTaskWoken = pdFALSE;
-char cChar;
+    portBASE_TYPE xHigherPriorityTaskWoken = pdFALSE;
+    char cChar;
 
     if( USART_GetITStatus(USART2, USART_IT_TXE ) == SET )
     {

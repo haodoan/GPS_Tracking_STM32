@@ -53,4 +53,5 @@ uint8_t GetAccount(void);
 void GetCellid(GPS_INFO  *info_cellid );
 void GetCmdDataSIM(char *str , char DATA_AT[5][10]);
 uint8_t GetIMEI(char * imei);
-int8_t TCPSendATcommand(char *ATcommand, char *expected_answer,unsigned int timeout);
+//int8_t TCPSendATcommand(char *ATcommand, char *expected_answer,unsigned int timeout);
+

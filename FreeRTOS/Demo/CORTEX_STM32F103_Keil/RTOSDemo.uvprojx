@@ -14,7 +14,7 @@
         <TargetCommonOption>
           <Device>STM32F103RB</Device>
           <Vendor>STMicroelectronics</Vendor>
-          <PackID>Keil.STM32F1xx_DFP.2.0.0</PackID>
+          <PackID>Keil.STM32F1xx_DFP.1.1.0</PackID>
           <PackURL>http://www.keil.com/pack/</PackURL>
           <Cpu>IROM(0x08000000,0x20000) IRAM(0x20000000,0x5000) CPUTYPE("Cortex-M3") CLOCK(12000000) ELITTLE</Cpu>
           <FlashUtilSpec></FlashUtilSpec>
@@ -84,6 +84,8 @@
             <UserProg2Name></UserProg2Name>
             <UserProg1Dos16Mode>0</UserProg1Dos16Mode>
             <UserProg2Dos16Mode>0</UserProg2Dos16Mode>
+            <nStopA1X>0</nStopA1X>
+            <nStopA2X>0</nStopA2X>
           </AfterMake>
           <SelectedForBatchBuild>0</SelectedForBatchBuild>
           <SVCSIdString></SVCSIdString>
@@ -147,7 +149,7 @@
             <RestoreSysVw>0</RestoreSysVw>
           </Target>
           <RunDebugAfterBuild>0</RunDebugAfterBuild>
-          <TargetSelection>11</TargetSelection>
+          <TargetSelection>12</TargetSelection>
           <SimDlls>
             <CpuDll></CpuDll>
             <CpuDllArguments></CpuDllArguments>
@@ -361,11 +363,13 @@
             <uSurpInc>0</uSurpInc>
             <uC99>0</uC99>
             <useXO>0</useXO>
+            <v6Lang>0</v6Lang>
+            <v6LangP>0</v6LangP>
             <VariousControls>
               <MiscControls></MiscControls>
               <Define>RVDS_ARMCM3_LM3S102</Define>
               <Undefine></Undefine>
-              <IncludePath>..\CORTEX_STM32F103_Keil;..\Common\include;..\..\Source\include;.\STM32F10xFWLib\inc</IncludePath>
+              <IncludePath>..\Common\include;..\..\Source\include;.\STM32F10xFWLib\inc;..\Source</IncludePath>
             </VariousControls>
           </Cads>
           <Aads>
@@ -412,11 +416,6 @@
               <FileName>STM32F10x.s</FileName>
               <FileType>2</FileType>
               <FilePath>.\STM32F10x.s</FilePath>
-            </File>
-            <File>
-              <FileName>lcd.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>..\Common\drivers\ST\STM32F10xFWLib\src\lcd.c</FilePath>
             </File>
             <File>
               <FileName>cortexm3_macro_rvds.s</FileName>
@@ -469,34 +468,9 @@
           <GroupName>Demo Files</GroupName>
           <Files>
             <File>
-              <FileName>sim908.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>.\sim908.c</FilePath>
-            </File>
-            <File>
               <FileName>ParTest.c</FileName>
               <FileType>1</FileType>
               <FilePath>.\ParTest\ParTest.c</FilePath>
-            </File>
-            <File>
-              <FileName>serial.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>.\serial\serial.c</FilePath>
-            </File>
-            <File>
-              <FileName>timertest.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>.\timertest.c</FilePath>
-            </File>
-            <File>
-              <FileName>main.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>.\main.c</FilePath>
-            </File>
-            <File>
-              <FileName>spi_flash.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>.\spi_flash.c</FilePath>
             </File>
             <File>
               <FileName>semtest.c</FileName>
@@ -534,9 +508,29 @@
               <FilePath>..\Common\Minimal\PollQ.c</FilePath>
             </File>
             <File>
+              <FileName>main.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\Source\main.c</FilePath>
+            </File>
+            <File>
+              <FileName>sim908.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\Source\sim908.c</FilePath>
+            </File>
+            <File>
               <FileName>nokia_5110.c</FileName>
               <FileType>1</FileType>
-              <FilePath>.\lcd_nokia5110\nokia_5110.c</FilePath>
+              <FilePath>..\Source\lcd_nokia5110\nokia_5110.c</FilePath>
+            </File>
+            <File>
+              <FileName>timertest.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>.\timertest.c</FilePath>
+            </File>
+            <File>
+              <FileName>serial.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\Source\serial\serial.c</FilePath>
             </File>
           </Files>
         </Group>

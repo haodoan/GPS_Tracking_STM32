@@ -33,11 +33,12 @@ __heap_base
 Heap_Mem        SPACE   Heap_Size
 __heap_limit
 
-				IMPORT xPortPendSVHandler
-				IMPORT xPortSysTickHandler
-				IMPORT vPortSVCHandler
-				IMPORT vUARTInterruptHandler
-				IMPORT vTimer2IntHandler
+                IMPORT xPortPendSVHandler
+                IMPORT xPortSysTickHandler
+                IMPORT vPortSVCHandler
+                IMPORT vUARTInterruptHandler
+                IMPORT vTimer2IntHandler
+                IMPORT vUART2InterruptHandler
 
                 PRESERVE8
                 THUMB
@@ -104,7 +105,7 @@ __Vectors       DCD     __initial_sp              ; Top of Stack
                 DCD     SPI1_IRQHandler           ; SPI1
                 DCD     SPI2_IRQHandler           ; SPI2
                 DCD     vUARTInterruptHandler     ; USART1
-                DCD     USART2_IRQHandler         ; USART2
+                DCD     vUART2InterruptHandler    ; USART2
                 DCD     USART3_IRQHandler         ; USART3
                 DCD     EXTI15_10_IRQHandler      ; EXTI Line 15..10
                 DCD     RTCAlarm_IRQHandler       ; RTC Alarm through EXTI Line
