@@ -323,7 +323,7 @@ static void vGPSTask(void *pvParameters)
                // LCD_write_string(0, 0, "Not Fix");
                 vGPSinfo.FIX = pdFALSE;
                 //memset(&vGPSinfo, '\0', sizeof(GPS_INFO));
-                GetCellid(&vGPSinfo);
+                //GetCellid(&vGPSinfo);
             }
             xSemaphoreGive( SIM908_Mutex );
         }
@@ -335,16 +335,16 @@ static void vGPSTask(void *pvParameters)
     }
 }
 /*GPRS task*/
-//#define SERVER "http://ptsv2.com/t/Hao/post"
-#define SERVER "http://store.redboxsa.com/update-location"
+#define SERVER "http://ptsv2.com/t/Hao/post"
+///#define SERVER "http://store.redboxsa.com/update-location"
 #define RESPONSE_DATA "status:true"
 static void vGPRSTask(void *pvParameters)
 {
     GPS_INFO vGPSinfo;
     HTTP_STATUS vHTTP_status;
-    char gprs_buffer[GPRS_BUFFER_SIZE] ={0,};
+    char gprs_buffer[GPRS_BUFFER_SIZE] ;
     uint16_t lcd_cnt = 0;
-	char  datOut[256] = {0,};
+		char  datOut[256] = {0,};
     uint32_t sector = 0 ;
     uint32_t size = 0;
     uint32_t latestOnlineStatus = pdTRUE;
@@ -357,7 +357,7 @@ static void vGPRSTask(void *pvParameters)
 
     STM_EVAL_SPI_Init();
     SD_Init();   
-    
+
     xTaskCreate(vGPSTask, "GPS", mainGPS_TASK_STACK_SIZE, NULL, mainGPS_TASK_PRIORITY, NULL);
 	
     for (;;)
@@ -374,10 +374,11 @@ static void vGPRSTask(void *pvParameters)
             {
                 if( xSemaphoreTake( SIM908_Mutex, ( TickType_t ) portMAX_DELAY ) == pdTRUE )
                 {
-                    memset(gprs_buffer, '\0', sizeof(gprs_buffer) / sizeof(char));
+                 //   memset(gprs_buffer, '\0', sizeof(gprs_buffer) / sizeof(char));
                     jsonDataPost(vGPSinfo,gprs_buffer);
-                    if (HTTP_POST_SUCCESS == HTTP_Post(gprs_buffer , 100000))
+                    if (HTTP_POST_SUCCESS == HTTP_Post(gprs_buffer , 10000))
                     {											
+											   memset(datOut, '\0', sizeof(datOut) / sizeof(char));
                         if(HTTP_READ_SUCCESS == HTTP_Read(datOut))
                         {
                             if(!strstr(datOut,RESPONSE_DATA))
@@ -454,7 +455,8 @@ static uint32_t WriteGPSDataInfo(uint32_t sector, GPS_INFO gpsInfo)
     uint8_t buff[256] ;
     uint32_t size;
 
-    sprintf((char*)buff, "{\"date\":\"%s\",\"lat\":\"%s\",\"lng\":\"%s\",\"speed\":\"%s\"}") ;
+    sprintf((char*)buff, "{\"date\":\"%s\",\"lat\":\"%s\",\"lng\":\"%s\",\"speed\":\"%d\"}", gpsInfo.date,gpsInfo.latitude \
+			                                                                              , gpsInfo.longtitude,10) ;
     SD_SectorWrite(sector, buff);
     size = strlen((char*)buff);
 

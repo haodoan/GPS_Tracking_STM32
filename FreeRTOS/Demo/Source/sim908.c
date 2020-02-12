@@ -631,17 +631,17 @@ uint8_t GetIMEI(char * imei)
 void jsonDataPost(GPS_INFO gpsData,char *outBuffer)
 {
 
-    char jsonString[160]= {0,};
+    char jsonString[160];
 
-        sprintf(jsonString , \
+sprintf(jsonString , \
          "{\
-            \"id\":%s,\
-            \"lat\":%s,\
-            \"lon\":%s,\
-            \"speed\":%d,\
-            \"fuel\":%d,\
-            \"bearing\":%d\
-    }",gpsData.IMEI,gpsData.latitude,gpsData.longtitude,0,0,0);
+\"id\":%s,\
+\"lat\":%s,\
+\"lon\":%s,\
+\"speed\":%d,\
+\"fuel\":%d,\
+\"bearing\":%d\
+}",gpsData.IMEI,gpsData.latitude,gpsData.longtitude,0,0,0);
 
     sprintf(outBuffer, "%s",jsonString);
 
