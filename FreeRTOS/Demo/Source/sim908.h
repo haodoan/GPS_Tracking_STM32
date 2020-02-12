@@ -44,7 +44,7 @@ typedef struct gps_info_t
     uint16_t  MNC;
     uint16_t  MCC;
     uint32_t  FIX;
-    uint32_t  online;
+    uint32_t  ONLINE;
 }GPS_INFO;
 
 #define MAX_LENGH_STR  128
@@ -68,6 +68,7 @@ HTTP_STATUS HTTP_Init(char *server);
 HTTP_STATUS HTTP_Post(char * data, uint32_t timeout);
 HTTP_STATUS HTTP_Release();
 HTTP_STATUS HTTP_Read(char * datOut);
+HTTP_STATUS HTTP_POST_FromSD(GPS_INFO gpsData, uint32_t sector_num, uint32_t data_size, uint32_t timeout, void (*func)(uint32_t , char *));
 
 void Sim908_setup(void);
 void Sim908_power_on(void);

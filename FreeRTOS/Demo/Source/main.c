@@ -174,8 +174,10 @@ static void vGPSTask(void *pvParameters);
 static void vGPRSTask(void *pvParameters);
 
 static void vSaveLocationTask(void *pvParameters);
-static uint32_t WriteGPSInfo(uint32_t sector, GPS_INFO gpsInfo);
+static uint32_t WriteGPSDataInfo(uint32_t sector, GPS_INFO gpsInfo);
 static void ReadGPSInfo(uint32_t sector, char *gpsBuff);
+static uint32_t WriteJsonHeadertoSDcard(GPS_INFO gpsInfo);
+static void vSaveLocationTask(void *pvParameters);
 /*
  * Configures the timers and interrupts for the fast interrupt test as
  * described at the top of this file.
@@ -376,7 +378,7 @@ static void vGPRSTask(void *pvParameters)
                     jsonDataPost(vGPSinfo,gprs_buffer);
                     if (HTTP_POST_SUCCESS == HTTP_Post(gprs_buffer , 100000))
                     {											
-                        if(HTTP_READ_SUCCES == HTTP_Read(datOut))
+                        if(HTTP_READ_SUCCESS == HTTP_Read(datOut))
                         {
                             if(!strstr(datOut,RESPONSE_DATA))
                             {
@@ -392,7 +394,8 @@ static void vGPRSTask(void *pvParameters)
                                 vGPSinfo.ONLINE = pdTRUE ;
                                 if(latestOnlineStatus == pdFALSE)
                                 {
-                                    HTTP_POST_FromSD(sector, size*sector , 20000, ReadGPSInfo) ;
+                                    WriteJsonHeadertoSDcard(vGPSinfo);
+                                    HTTP_POST_FromSD(vGPSinfo, sector, size*sector , 20000, ReadGPSInfo) ;
                                     sector = 0;       
                                     size = 0;                             
                                 }
@@ -410,37 +413,6 @@ static void vGPRSTask(void *pvParameters)
     }
 }
 
-
-void HTTP_POST_FromSD(GPS_INFO gpsData, uint32_t sector_num, uint32_t data_size, uint32_t timeout, void (*func)(uint32_t , char *))
-{
-    char command[30] = {0,};
-    char gpsBuff[256];
-    uint32_t i;
-    HTTP_STATUS httpStatus = HTTP_POST_SUCCESS;
-
-    sprintf(command, "AT+HTTPDATA=%d,%d",data_size,timeout);
-    if (pdTRUE == SendATcommand(command, "DOWNLOAD", 2000))
-    {
-        for(i = 0; i < sector_num - 1; i++)
-        {
-            func(i , gpsBuff);
-            printf("%s",gpsBuff );
-        }
-        func(sector_num , gpsBuff);
-        if (pdTRUE != SendATcommand(gpsBuff, "OK", 20000))
-        {
-            httpStatus = HTTP_POST_FAIL;
-        }
-
-        SendATcommand("AT+HTTPACTION=1", "OK", 2000) ;
-    }
-    else
-    {
-        httpStatus = HTTP_POST_FAIL;
-    }    
-    return httpStatus;
-}
-
 static void vSaveLocationTask(void *pvParameters)
 {
     
@@ -453,35 +425,38 @@ static void vSaveLocationTask(void *pvParameters)
 
     for (;;)
     {
-
-        if (xQueueReceive(SIM908_queue, &vGPSinfo, SAVELOC_BLOCK_TIME)) // Receive data if gprs lost
-        {
-            SD_SectorWrite(0x00, "TEST");
-        }
     }
 }
 
 
 
-static uint32_t WriteJsonHeader(GPS_INFO gpsInfo)
+static uint32_t WriteJsonHeadertoSDcard(GPS_INFO gpsInfo)
 {
-        printf("{\
-                \"id\":%s", \
-                \"online\":false",\
-                \"gps\":%s",\
-                \"position\":[\n{",\
+    char buff[256] ;
+		uint32_t size;
 
-                , gpsData.IMEI);    
+    sprintf(buff,"{\
+            \"id\":%s\", \
+            \"online\":false\",\
+            \"gps\":true\",\
+            \"position\":[\n\"",\
+            gpsInfo.IMEI);    
+
+    SD_SectorWrite(0, (uint8_t *)buff);
+    size = strlen(buff);
+
+    return size ;
+
 }        
 static uint32_t WriteGPSDataInfo(uint32_t sector, GPS_INFO gpsInfo)
 {
 
-    char buff[256] ;
+    uint8_t buff[256] ;
     uint32_t size;
 
-    sprintf(buff, "\"date\":\"%s\",\"lat\":\"%s\",\"lng\":\"%s\",\"speed\":\"%s\"") ;
+    sprintf((char*)buff, "{\"date\":\"%s\",\"lat\":\"%s\",\"lng\":\"%s\",\"speed\":\"%s\"}") ;
     SD_SectorWrite(sector, buff);
-    size = strlen(buff);
+    size = strlen((char*)buff);
 
     return size ;
 }
@@ -489,7 +464,7 @@ static uint32_t WriteGPSDataInfo(uint32_t sector, GPS_INFO gpsInfo)
 static void ReadGPSInfo(uint32_t sector, char *gpsBuff)
 {
 
-    SD_SectorRead( sector, gpsBuff );
+    SD_SectorRead( sector, (uint8_t *)gpsBuff );
 }
 
 

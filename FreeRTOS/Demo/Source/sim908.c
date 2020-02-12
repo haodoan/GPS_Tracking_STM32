@@ -371,6 +371,37 @@ HTTP_STATUS HTTP_Post(char * data, uint32_t timeout)
     
 }
 
+
+HTTP_STATUS HTTP_POST_FromSD(GPS_INFO gpsData, uint32_t sector_num, uint32_t data_size, uint32_t timeout, void (*func)(uint32_t , char *))
+{
+    char command[30] = {0,};
+    char gpsBuff[256];
+    uint32_t i;
+    HTTP_STATUS httpStatus = HTTP_POST_SUCCESS;
+
+    sprintf(command, "AT+HTTPDATA=%d,%d",data_size,timeout);
+    if (pdTRUE == SendATcommand(command, "DOWNLOAD", 2000))
+    {
+        for(i = 0; i < sector_num ; i++)
+        {
+            func(i , gpsBuff);
+            printf("%s,",gpsBuff );
+        }
+
+        if (pdTRUE != SendATcommand("\n]", "OK", 20000))
+        {
+            httpStatus = HTTP_POST_FAIL;
+        }
+
+        SendATcommand("AT+HTTPACTION=1", "OK", 2000) ;
+    }
+    else
+    {
+        httpStatus = HTTP_POST_FAIL;
+    }    
+    return httpStatus;
+}
+
 /*FUNCTION**********************************************************************
  *
  * Function Name : HTTP Read
@@ -602,14 +633,14 @@ void jsonDataPost(GPS_INFO gpsData,char *outBuffer)
 
     char jsonString[160]= {0,};
 
-    sprintf(jsonString , \
-     "{\
-        \"id\":%s,\
-        \"lat\":%s,\
-        \"lon\":%s,\
-        \"speed\":%d,\
-        \"fuel\":%d,\
-        \"bearing\":%d\
+        sprintf(jsonString , \
+         "{\
+            \"id\":%s,\
+            \"lat\":%s,\
+            \"lon\":%s,\
+            \"speed\":%d,\
+            \"fuel\":%d,\
+            \"bearing\":%d\
     }",gpsData.IMEI,gpsData.latitude,gpsData.longtitude,0,0,0);
 
     sprintf(outBuffer, "%s",jsonString);
