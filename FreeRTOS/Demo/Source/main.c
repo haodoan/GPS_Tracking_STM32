@@ -115,27 +115,30 @@
 #include "serial.h"
 #include "sim908.h"
 #include "lcd_nokia5110/nokia_5110.h"
+
+#include "FAT/ff.h"
+#include "stm32_sd_spi.h"
+#include "stm32_spi.h"
+
+
+
 /* Task priorities. */
 #define mainGPS_TASK_PRIORITY (tskIDLE_PRIORITY + 3)
 #define mainGPRS_TASK_PRIORITY (tskIDLE_PRIORITY + 4)
+#define mainSAVE_LOCATION_TASK_PRIORITY (tskIDLE_PRIORITY + 2)
 #define mainLED_TASK_PRIORITY (tskIDLE_PRIORITY)
 /* The check task uses the sprintf function so requires a little more stack. */
-#define mainGPS_TASK_STACK_SIZE (configMINIMAL_STACK_SIZE + 128)
-#define mainGPRS_TASK_STACK_SIZE (configMINIMAL_STACK_SIZE + 128)
+#define mainGPS_TASK_STACK_SIZE (configMINIMAL_STACK_SIZE + 256)
+#define mainGPRS_TASK_STACK_SIZE (configMINIMAL_STACK_SIZE + 2048)
 #define mainLED_TASK_STACK_SIZE (configMINIMAL_STACK_SIZE)
+#define mainSAVELOC_TASK_STACK_SIZE (configMINIMAL_STACK_SIZE + 2048)
 /* The time between cycles of the 'check' task. */
 #define mainGPS_DELAY ((TickType_t)5000 / portTICK_PERIOD_MS)
 #define mainLED_BLINK_DELAY (500)
 
-#define GPRS_HEAD_CMD "????"
-#define GPRS_END_CMD "$$$$"
-
-//#define IP_SERVER "42.115.190.28"
-//#define IP_SERVER  "118.71.231.148"
-#define IP_SERVER "42.112.151.79"
-#define PORT "8888"
 #define GPRS_BLOCK_TIME 5000
-#define GPRS_BUFFER_SIZE 200
+#define SAVELOC_BLOCK_TIME 5000
+#define GPRS_BUFFER_SIZE 320
 
 #define GPS_BLOCK_TIME 5000
 /*-----------------------------------------------------------*/
@@ -170,6 +173,9 @@ static void vGPSTask(void *pvParameters);
 
 static void vGPRSTask(void *pvParameters);
 
+static void vSaveLocationTask(void *pvParameters);
+static uint32_t WriteGPSInfo(uint32_t sector, GPS_INFO gpsInfo);
+static void ReadGPSInfo(uint32_t sector, char *gpsBuff);
 /*
  * Configures the timers and interrupts for the fast interrupt test as
  * described at the top of this file.
@@ -185,6 +191,62 @@ QueueHandle_t SIM908_queue;
 SemaphoreHandle_t SIM908_Mutex;
 /*-----------------------------------------------------------*/
 
+static const TCHAR filename[ 12 + 1 ] = { 'T', 'E', 'S', 'T', '_', 'S', 'D', 'C', '.', 'T', 'X', 'T', '\0' };
+static const TCHAR filecontext[ 15 ] = { 'U', 'C', 'A', 'N', '-', 'S', 'T', 'M', '3', '2', 'F', '2', '1', '7', '\0' };
+static FATFS fs;
+static FIL f;
+
+static uint8_t buff[ 512 ];
+static uint8_t buff1[ 512 ];
+
+static void SDCard_Run( void )
+{
+	UINT nb;
+	FRESULT rs;
+
+	if ( SD_Detect() == SD_NOT_PRESENT )
+	{
+		printf( "SDCard isn't detected\n" );
+		return;
+	}
+
+	printf( "f_mount() ... " );
+	rs = f_mount( 0, &fs );
+	if ( rs != FR_OK )
+	{
+		printf( "failed with code %d\n", rs );
+		return;
+	}
+	printf( "OK\n" );
+
+	printf( "f_open() ... " );
+	rs = f_open( &f, "test.txt", FA_OPEN_ALWAYS | FA_READ | FA_WRITE );
+	if ( rs != FR_OK )
+	{
+		printf( "failed with code %d\n", rs );
+		return;
+	}
+	printf( "OK\n" );
+	printf( "f_write() ... " );
+	rs = f_write( &f, filecontext, sizeof(filecontext), &nb );
+	if ( rs != FR_OK || nb != sizeof(filecontext) )
+	{
+		printf( "failed with code %d\n", rs );
+		return;
+	}
+	printf( "OK\n" );
+
+	printf( "f_close() ... " );
+	rs = f_close( &f );
+	if ( rs != FR_OK )
+	{
+		printf( "failed with code %d\n", rs );
+		return;
+	}
+	printf( " OK\n" );
+}
+
+
 int main(void)
 {
 #ifdef DEBUG
@@ -192,7 +254,7 @@ int main(void)
 #endif
 
     prvSetupHardware();
-
+	
     /* Start the standard demo tasks. */
     //	vStartBlockingQueueTasks( mainBLOCK_Q_PRIORITY );
     //	vCreateBlockTimeTasks();
@@ -201,23 +263,19 @@ int main(void)
     //	vStartIntegerMathTasks( mainINTEGER_TASK_PRIORITY );
     //	vStartLEDFlashTasks( mainFLASH_TASK_PRIORITY );
     //	vAltStartComTestTasks( mainCOM_TEST_PRIORITY, mainCOM_TEST_BAUD_RATE, mainCOM_TEST_LED );
-
-    LCD_init();
-    LCD_clear();
-    LCD_write_string(0, 2, "    DEMO      ");
-    LCD_write_string(0, 3, "GPS Tracking..");
-
+	
+    
     SIM908_queue = xQueueCreate(20, sizeof(GPS_INFO));
     if (SIM908_queue == NULL)
     {
-        LCD_write_string(0, 3, "QUEUE MEM fAIL");
+        //LCD_write_string(0, 3, "QUEUE MEM fAIL");
         while (TRUE)
             ;
     }
     SIM908_Mutex = xSemaphoreCreateMutex();
     if( SIM908_Mutex == NULL )
     {
-        LCD_write_string(0, 3, "MUTEX MEM fAIL");
+        //LCD_write_string(0, 3, "MUTEX MEM fAIL");
         while(1);
     }
 
@@ -236,10 +294,9 @@ int main(void)
 /*GPS task*/
 static void vGPSTask(void *pvParameters)
 {
-    char LCD_GPS[20];
     static char gps_cnt=0;
     GPS_INFO vGPSinfo;
-    
+
     /*GPS Power ON*/
     GPS_PWR();
     /*get imei number of module*/
@@ -254,14 +311,14 @@ static void vGPSTask(void *pvParameters)
         {
             if (pdTRUE == Wait_GPS_Fix())
             {
-                LCD_write_string(0, 0, "Fix        ");
+                //LCD_write_string(0, 0, "Fix        ");
                 vGPSinfo.FIX  = pdTRUE;
                 //memset(&vGPSinfo, '\0', sizeof(GPS_INFO));
                 get_GPS(&vGPSinfo);
             }
             else // get cell id
             {
-                LCD_write_string(0, 0, "Not Fix");
+               // LCD_write_string(0, 0, "Not Fix");
                 vGPSinfo.FIX = pdFALSE;
                 //memset(&vGPSinfo, '\0', sizeof(GPS_INFO));
                 GetCellid(&vGPSinfo);
@@ -270,86 +327,172 @@ static void vGPSTask(void *pvParameters)
         }
         if (xQueueSend(SIM908_queue, &vGPSinfo, GPS_BLOCK_TIME) != pdPASS)
         {
-            LCD_write_string(0, 3, "Queue fully   ");
+            //LCD_write_string(0, 3, "Queue fully   ");
         }
-        sprintf( LCD_GPS,"GPS  send %d  ",gps_cnt++);
-        LCD_write_string(0, 3, LCD_GPS);    
         vTaskDelay(5000);
     }
 }
 /*GPRS task*/
+//#define SERVER "http://ptsv2.com/t/Hao/post"
+#define SERVER "http://store.redboxsa.com/update-location"
+#define RESPONSE_DATA "status:true"
 static void vGPRSTask(void *pvParameters)
 {
     GPS_INFO vGPSinfo;
-    TCP_STATUS vTCP_status;
-    char gprs_buffer[GPRS_BUFFER_SIZE] = {0};
+    HTTP_STATUS vHTTP_status;
+    char gprs_buffer[GPRS_BUFFER_SIZE] ={0,};
     uint16_t lcd_cnt = 0;
+	char  datOut[256] = {0,};
+    uint32_t sector = 0 ;
+    uint32_t size = 0;
+    uint32_t latestOnlineStatus = pdTRUE;
     // Set up sim908
     Sim908_setup();
-    //GPS_PWR();
     // setting gprs for Sim module
     Config_GPRS_SIM908();
-    // printf("ATD+84944500186;\r");
-    LCD_write_string(0, 3, "Connecting...");
-    vTCP_status = TCP_Connect((char *)IP_SERVER, (char *)PORT,60000);
-   (vTCP_status == TCP_CONNECT_SUCCESS) ? LCD_write_string(0, 3, "Connect OK...") : LCD_write_string(0, 3, "Connect FAIL");
+
+    HTTP_Init(SERVER);
+
+    STM_EVAL_SPI_Init();
+    SD_Init();   
     
     xTaskCreate(vGPSTask, "GPS", mainGPS_TASK_STACK_SIZE, NULL, mainGPS_TASK_PRIORITY, NULL);
+	
+    for (;;)
+    {
+        if (xQueueReceive(SIM908_queue, &vGPSinfo, GPRS_BLOCK_TIME)) // Receive data from GPS task
+        {
+            if (vGPSinfo.FIX == pdFALSE) // GPS not fix
+            {
+/*                memset(gprs_buffer, '\0', sizeof(gprs_buffer) / sizeof(char));
+                sprintf(gprs_buffer, "%s,%s,0,0,%d,%d,%s,%s,0,0,0,%s\r\n", GPRS_HEAD_CMD, vGPSinfo.IMEI, vGPSinfo.MCC,
+                    vGPSinfo.MNC,vGPSinfo.LAC,vGPSinfo.CELLID, GPRS_END_CMD);*/
+            }
+            else // GPS fix
+            {
+                if( xSemaphoreTake( SIM908_Mutex, ( TickType_t ) portMAX_DELAY ) == pdTRUE )
+                {
+                    memset(gprs_buffer, '\0', sizeof(gprs_buffer) / sizeof(char));
+                    jsonDataPost(vGPSinfo,gprs_buffer);
+                    if (HTTP_POST_SUCCESS == HTTP_Post(gprs_buffer , 100000))
+                    {											
+                        if(HTTP_READ_SUCCES == HTTP_Read(datOut))
+                        {
+                            if(!strstr(datOut,RESPONSE_DATA))
+                            {
+                                vGPSinfo.ONLINE = pdFALSE ;
+
+                                latestOnlineStatus = pdFALSE;
+                                size += WriteGPSDataInfo(sector, vGPSinfo);
+                                sector++ ;
+
+                            }
+                            else
+                            {                                
+                                vGPSinfo.ONLINE = pdTRUE ;
+                                if(latestOnlineStatus == pdFALSE)
+                                {
+                                    HTTP_POST_FromSD(sector, size*sector , 20000, ReadGPSInfo) ;
+                                    sector = 0;       
+                                    size = 0;                             
+                                }
+
+                                latestOnlineStatus = pdTRUE;
+                            }
+                        }
+                    }
+                    xSemaphoreGive( SIM908_Mutex );
+                }
+            
+            }
+
+        }  
+    }
+}
+
+
+void HTTP_POST_FromSD(GPS_INFO gpsData, uint32_t sector_num, uint32_t data_size, uint32_t timeout, void (*func)(uint32_t , char *))
+{
+    char command[30] = {0,};
+    char gpsBuff[256];
+    uint32_t i;
+    HTTP_STATUS httpStatus = HTTP_POST_SUCCESS;
+
+    sprintf(command, "AT+HTTPDATA=%d,%d",data_size,timeout);
+    if (pdTRUE == SendATcommand(command, "DOWNLOAD", 2000))
+    {
+        for(i = 0; i < sector_num - 1; i++)
+        {
+            func(i , gpsBuff);
+            printf("%s",gpsBuff );
+        }
+        func(sector_num , gpsBuff);
+        if (pdTRUE != SendATcommand(gpsBuff, "OK", 20000))
+        {
+            httpStatus = HTTP_POST_FAIL;
+        }
+
+        SendATcommand("AT+HTTPACTION=1", "OK", 2000) ;
+    }
+    else
+    {
+        httpStatus = HTTP_POST_FAIL;
+    }    
+    return httpStatus;
+}
+
+static void vSaveLocationTask(void *pvParameters)
+{
+    
+    STM_EVAL_SPI_Init();
+    SD_Init();    
+//    SD_SectorWrite(0x00, "TEST");
+//    SD_SectorRead( 0x0, buff );
+    
+    xTaskCreate(vGPSTask, "SAVELOC", mainSAVELOC_TASK_STACK_SIZE, NULL, mainSAVE_LOCATION_TASK_PRIORITY, NULL);
 
     for (;;)
     {
-        if(TCP_CONNECT_SUCCESS == TCP_GetStatus()) // CONNECT SERVER OK
-        {
-            if (xQueueReceive(SIM908_queue, &vGPSinfo, GPRS_BLOCK_TIME)) // Receive data from GPS task
-            {
-                if (vGPSinfo.FIX == pdFALSE) // GPS not fix
-                {
-                    memset(gprs_buffer, '\0', sizeof(gprs_buffer) / sizeof(char));
-                    sprintf(gprs_buffer, "%s,%s,0,0,%d,%d,%s,%s,0,0,0,%s\r\n", GPRS_HEAD_CMD, vGPSinfo.IMEI, vGPSinfo.MCC,
-                        vGPSinfo.MNC,vGPSinfo.LAC,vGPSinfo.CELLID, GPRS_END_CMD);
-                }
-                else // GPS fix
-                {
-                    memset(gprs_buffer, '\0', sizeof(gprs_buffer) / sizeof(char));
-                    sprintf(gprs_buffer, "%s,%s,1,%s,%s,%s,0,0,0,%s\r\n", GPRS_HEAD_CMD, vGPSinfo.IMEI,vGPSinfo.date,vGPSinfo.latitude,
-                            vGPSinfo.longtitude,GPRS_END_CMD);
-                }
-                if( xSemaphoreTake( SIM908_Mutex, ( TickType_t ) portMAX_DELAY ) == pdTRUE )
-                {
-                    if (TCP_SEND_SUCCESS == TCP_Send(gprs_buffer))
-                    {
-                        char lcd_buff_out[20];
-                        sprintf(lcd_buff_out, "GPRS Send %d  ", lcd_cnt++);
-                        LCD_write_string(0, 4, lcd_buff_out);
-                    }
-                    else
-                    {
-                        LCD_write_string(0, 4, "Send FAIL     ");
 
-                    }
-
-                     xSemaphoreGive( SIM908_Mutex );
-                }
-            }
-        }
-        else // CONNECT FAIL
+        if (xQueueReceive(SIM908_queue, &vGPSinfo, SAVELOC_BLOCK_TIME)) // Receive data if gprs lost
         {
-            LCD_write_string(0, 4, "CONNECTING...");
-            /*Re-connect server*/
-            if (TCP_CONNECT_SUCCESS == TCP_Connect((char *)IP_SERVER, (char *)PORT,20000))
-            {
-                LCD_write_string(0, 4, "RE-CONNECT OK..");
-            }
-            else
-            {
-              LCD_write_string(0, 4, "CONNECT FAIL..");
-              /*Switch to GPS task*/
-              vTaskDelay(500);
-            }
-            
+            SD_SectorWrite(0x00, "TEST");
         }
     }
 }
+
+
+
+static uint32_t WriteJsonHeader(GPS_INFO gpsInfo)
+{
+        printf("{\
+                \"id\":%s", \
+                \"online\":false",\
+                \"gps\":%s",\
+                \"position\":[\n{",\
+
+                , gpsData.IMEI);    
+}        
+static uint32_t WriteGPSDataInfo(uint32_t sector, GPS_INFO gpsInfo)
+{
+
+    char buff[256] ;
+    uint32_t size;
+
+    sprintf(buff, "\"date\":\"%s\",\"lat\":\"%s\",\"lng\":\"%s\",\"speed\":\"%s\"") ;
+    SD_SectorWrite(sector, buff);
+    size = strlen(buff);
+
+    return size ;
+}
+
+static void ReadGPSInfo(uint32_t sector, char *gpsBuff)
+{
+
+    SD_SectorRead( sector, gpsBuff );
+}
+
+
 /*-----------------------------------------------------------*/
 
 static void prvSetupHardware(void)

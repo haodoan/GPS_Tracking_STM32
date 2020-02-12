@@ -118,15 +118,18 @@ int8_t SendATcommand(char *ATcommand, char *expected_answer,unsigned int timeout
         }
         cPassMessage[count_char] = '\0';
         xSemaphoreGive( xMutex );
+				
+				return pdTRUE;
     }
-    return pdTRUE;
+		else
+			return pdFALSE;
 }
 
 uint8_t GPS_PWR()
 {
    // Power up GPS
      SendATcommand("AT+CGPSPWR=1", "OK", 2000);
-    // Reset GPS Hot mode
+    // Reset GPS Hot bmode
      SendATcommand("AT+CGPSRST=1", "OK", 2000);
      return pdTRUE;
 }
@@ -194,9 +197,18 @@ uint8_t get_GPS(GPS_INFO *vGPSinfo)
  *END**************************************************************************/
 void Config_GPRS_SIM908(void)
 {
+
+    /* For TCPIP GPRS*/
     //    SendATcommand("AT+CIPCSGP=1,\"v-internet\",\"\",\"\"","OK", 2000); // For Viettel Network
     // VinaPhone
-    SendATcommand("AT+CIPCSGP=1,\"3m-world\",\"mms\",\"mms\"", "OK", 2000); // For Vina Network
+    //SendATcommand("AT+CIPCSGP=1,\"3m-world\",\"mms\",\"mms\"", "OK", 2000); // For Vina Network
+
+    /*for HTTP GPRS */
+    SendATcommand("AT+SAPBR=3,1,\"Contype\",\"GPRS\"","OK",2000);
+    SendATcommand("AT+SAPBR=3,1,\"APN\",\"v-internet\"","OK",2000);
+    SendATcommand("AT+SAPBR=1,1","OK",2000);
+    SendATcommand("AT+SAPBR=2,1","OK",2000);
+	
 }
 
 /*FUNCTION**********************************************************************
@@ -287,6 +299,160 @@ TCP_STATUS TCP_Close(void)
     return TCP_FAIL;
 }
 
+/*FUNCTION**********************************************************************
+ *
+ * Function Name : HTTP init
+ * Description   :
+ * command :
+ * 
+ *       AT+HTTPINIT
+ *       AT+HTTPSSL=1
+ *       AT+HTTPPARA="CID",1
+ * This function
+ *
+ *END**************************************************************************/
+HTTP_STATUS HTTP_Init(char *server)
+{
+    char command[320] ;
+    uint8_t eRet = pdTRUE;
+	
+    SendATcommand("AT+HTTPTERM","OK",1000);
+    eRet = SendATcommand("AT+HTTPINIT","OK",1000);
+    if(eRet == pdTRUE)
+    {
+        eRet = SendATcommand("AT+HTTPPARA=\"CID\",1","OK",1000);
+        if(eRet != pdTRUE)
+        {
+            return HTTP_INIT_FAIL;
+        }
+        sprintf(command, "AT+HTTPPARA=\"URL\",\"%s\"", server);
+        SendATcommand(command,"OK",1000);
+        SendATcommand("AT+HTTPPARA=\"CONTENT\",\"application/json\"","OK",2000);     
+
+        return HTTP_INIT_SUCCESS;
+    }
+
+    return HTTP_INIT_FAIL;
+   
+}
+
+/*FUNCTION**********************************************************************
+ *
+ * Function Name : HTTP Post
+ * Description   :
+ * command :
+ * 
+ *       AT+HTTPPARA="URL","http://ptsv2.com/t/Hao/post"
+ *       AT+HTTPDATA=10,100000
+ *       AT+HTTPPARA="CONTENT","application/json"
+ *       AT+HTTPACTION=1
+ * This function
+ *
+ *END**************************************************************************/
+HTTP_STATUS HTTP_Post(char * data, uint32_t timeout)
+{
+    char command[50] = {0,};
+    HTTP_STATUS httpStatus = HTTP_POST_SUCCESS;
+
+    sprintf(command, "AT+HTTPDATA=%d,%d",strlen(data) + 1,timeout);
+    if (pdTRUE == SendATcommand(command, "DOWNLOAD", 2000))
+    {
+        if (pdTRUE != SendATcommand(data, "OK", 20000))
+        {
+            httpStatus = HTTP_POST_FAIL;
+        }
+        else{
+            SendATcommand("AT+HTTPACTION=1" , "OK" ,2000);
+        }
+
+    }
+    
+    return httpStatus;
+    
+}
+
+/*FUNCTION**********************************************************************
+ *
+ * Function Name : HTTP Read
+ * Description   : Read data response after post
+ * command :
+ *       AT+HTTPREAD
+ * This function
+ *
+ *END**************************************************************************/
+HTTP_STATUS HTTP_Read(char * datOut)
+
+{
+    signed char SIM_RxChar;
+    char *buffer = pvPortMalloc(160);
+	int cnt = 0;
+    uint32_t error = pdTRUE;
+    HTTP_STATUS httpStatus = HTTP_READ_SUCCESS;
+
+    if (pdTRUE == SendATcommand("AT+HTTPREAD", "+HTTPREAD", 10000))
+    {
+            do {
+                if (pdTRUE == xSerialGetChar(&uart2_handle, (signed char*)&SIM_RxChar, 0xffff))
+                {
+                    *(buffer + cnt++) = SIM_RxChar;
+                }
+                else
+                { 
+                    httpStatus = HTTP_READ_FAIL;
+                    break;
+
+                }
+                if(strstr(buffer , "<h2>404</h2>"))
+                {
+                    httpStatus = HTTP_NOT_FOUND;
+                    break;
+                }
+                else if(strstr(buffer , "<h2>400</h2>"))
+                {
+                    httpStatus = HTTP_PARAM_INVALID;
+                    break;
+                }
+                else if (strstr(buffer , "\r\nOK\r\n"))
+                {
+                    httpStatus = HTTP_READ_SUCCESS;
+                    break;
+                }
+            }while(1) ;
+       }
+
+    vPortFree(buffer);
+
+    if(httpStatus  == HTTP_READ_SUCCESS)
+    {
+        strcpy(datOut , buffer);
+    }
+
+    return httpStatus;
+
+
+}
+
+/*FUNCTION**********************************************************************
+ *
+ * Function Name : HTTP Release
+ * Description   :
+ * command :
+ * 
+ *       AT+HTTPTERM
+ * This function
+ *
+ *END**************************************************************************/
+HTTP_STATUS HTTP_Release()
+{
+    if (pdTRUE == SendATcommand("AT+HTTPTERM","OK",1000))
+    {
+        return HTTP_RELEASE_SUCCESS;
+    }
+
+    return HTTP_RELEASE_FAIL;
+
+
+}
 uint8_t GetAccount()
 {
     char buffer_acc[160] , *ptr_buff;
@@ -333,26 +499,9 @@ void Sim908_setup(void)
     //SendATcommand("AT+CGPSPWR=1", "OK", 2000); // power up gps
     // Reset GPS Cold mde
     //SendATcommand("AT+CGPSRST=1", "OK", 2000);
-    SendATcommand("AT+CREG=2", "OK", 2000);
     /************End Config Sim908 Module *****************************/
     // delay(1000);
-    Config_GPRS_SIM908();
-    while (SendATcommand("AT+CREG?", "+CREG: 2,1", 2000) == pdFALSE);
-    // Configure DNS server address
-    SendATcommand("AT+CGATT", "OK", 2000);
-    // delay(1000);
-    SendATcommand("AT+CSTT=\"3m-world\",\"mms\",\"mms\"", "OK", 2000);
-    SendATcommand("AT+CIICR", "OK", 8000);
-    // delay(5000);
-    SendATcommand("AT+CIPSTATUS", "OK", 3000);
-    // delay(2000);
-    SendATcommand("AT+CIFSR", "OK", 3000);
-    // delay(4000);
-    SendATcommand("AT+CDNSCFG=\"8.8.8.8\",\"4.4.4.4\"", "OK", 2000);
-    // delay(2000);
     SendATcommand("AT&W", "OK", 2000);
-    /*Config for first time*/
-    // Config_GPRS_SIM908();
 }
 
 void Sim908_power_on(void)
@@ -440,4 +589,29 @@ uint8_t GetIMEI(char * imei)
         xSemaphoreGive( xMutex );        
     }
     return error;
+}
+
+/*FUNCTION**********************************************************************
+ *
+ * Function Name : jsonDataPost
+ * Description   : covert gps data to json string
+ *
+ *END**************************************************************************/
+void jsonDataPost(GPS_INFO gpsData,char *outBuffer)
+{
+
+    char jsonString[160]= {0,};
+
+    sprintf(jsonString , \
+     "{\
+        \"id\":%s,\
+        \"lat\":%s,\
+        \"lon\":%s,\
+        \"speed\":%d,\
+        \"fuel\":%d,\
+        \"bearing\":%d\
+    }",gpsData.IMEI,gpsData.latitude,gpsData.longtitude,0,0,0);
+
+    sprintf(outBuffer, "%s",jsonString);
+
 }

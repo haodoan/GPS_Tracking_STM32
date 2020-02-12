@@ -18,6 +18,21 @@ typedef enum _tcp_status
     TCP_FAIL_MEM
 } TCP_STATUS ;
 
+typedef enum http_status
+{
+    HTTP_INIT_SUCCESS =0,
+	HTTP_INIT_FAIL,
+    HTTP_POST_SUCCESS,
+    HTTP_POST_FAIL,
+    HTTP_RELEASE_FAIL,
+    HTTP_RELEASE_SUCCESS,
+    HTTP_READ_SUCCESS,
+    HTTP_READ_FAIL,
+    HTTP_NOT_FOUND,
+    HTTP_RESPONSE_FAILE,
+    HTTP_PARAM_INVALID
+} HTTP_STATUS ;
+
 typedef struct gps_info_t
 {
     char IMEI[20];
@@ -29,7 +44,9 @@ typedef struct gps_info_t
     uint16_t  MNC;
     uint16_t  MCC;
     uint32_t  FIX;
+    uint32_t  online;
 }GPS_INFO;
+
 #define MAX_LENGH_STR  128
 #define SIM908_PWRON   GPIO_WriteBit(GPIOB, GPIO_Pin_0, Bit_SET)
 #define SIM908_PWROFF  GPIO_WriteBit(GPIOB, GPIO_Pin_0, Bit_RESET)
@@ -46,6 +63,12 @@ TCP_STATUS TCP_Connect(char *IP_address, char *Port, unsigned int timeout);
 TCP_STATUS TCP_Send(char *data_string)	;
 TCP_STATUS TCP_Close(void);
 TCP_STATUS TCP_GetStatus(void);
+
+HTTP_STATUS HTTP_Init(char *server);
+HTTP_STATUS HTTP_Post(char * data, uint32_t timeout);
+HTTP_STATUS HTTP_Release();
+HTTP_STATUS HTTP_Read(char * datOut);
+
 void Sim908_setup(void);
 void Sim908_power_on(void);
 uint8_t GPS_PWR(void);
@@ -53,5 +76,6 @@ uint8_t GetAccount(void);
 void GetCellid(GPS_INFO  *info_cellid );
 void GetCmdDataSIM(char *str , char DATA_AT[5][10]);
 uint8_t GetIMEI(char * imei);
+void jsonDataPost(GPS_INFO gpsData,char *outBuffer);
 //int8_t TCPSendATcommand(char *ATcommand, char *expected_answer,unsigned int timeout);
 
