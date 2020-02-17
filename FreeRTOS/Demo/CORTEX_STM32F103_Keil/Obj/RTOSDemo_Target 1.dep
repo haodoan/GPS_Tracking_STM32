@@ -1,0 +1,486 @@
+Dependencies for Project 'RTOSDemo', Target 'Target 1': (DO NOT MODIFY !)
+CompilerVersion: 5060750::V5.06 update 6 (build 750)::ARMCC
+F (.\STM32F10x.s)(0x5E11EA78)(--cpu Cortex-M3 -g --apcs=interwork --pd "__MICROLIB SETA 1"-I.\RTE\_Target_1-IC:\Users\Administrator.ThinPC-PC\AppData\Local\Arm\Packs\Keil\STM32F1xx_DFP\2.3.0\Device\Include-IC:\Keil_v5\ARM\CMSIS\Include-IC:\Users\Administrator.ThinPC-PC\AppData\Local\Arm\Packs\Keil\STM32F1xx_DFP\2.3.0--pd "__UVISION_VERSION SETA 529" --pd "STM32F10X_MD SETA 1"--list .\stm32f10x.lst --xref -o .\obj\stm32f10x.o --depend .\obj\stm32f10x.d)
+F (..\Common\drivers\ST\STM32F10xFWLib\src\cortexm3_macro_rvds.s)(0x5E11EA79)(--cpu Cortex-M3 -g --apcs=interwork --pd "__MICROLIB SETA 1"-I.\RTE\_Target_1-IC:\Users\Administrator.ThinPC-PC\AppData\Local\Arm\Packs\Keil\STM32F1xx_DFP\2.3.0\Device\Include-IC:\Keil_v5\ARM\CMSIS\Include-IC:\Users\Administrator.ThinPC-PC\AppData\Local\Arm\Packs\Keil\STM32F1xx_DFP\2.3.0--pd "__UVISION_VERSION SETA 529" --pd "STM32F10X_MD SETA 1"--list .\cortexm3_macro_rvds.lst --xref -o .\obj\cortexm3_macro_rvds.o --depend .\obj\cortexm3_macro_rvds.d)
+F (.\STM32F10xFWLib\src\stm32f10x_usart.c)(0x5E481527)(-c --cpu Cortex-M3 -D__MICROLIB -g -O0 --apcs=interwork -I ..\Common\include -I ..\..\Source\include -I .\STM32F10xFWLib\inc -I ..\Source -I ..\Source\FAT-I.\RTE\_Target_1-IC:\Users\Administrator.ThinPC-PC\AppData\Local\Arm\Packs\Keil\STM32F1xx_DFP\2.3.0\Device\Include-IC:\Keil_v5\ARM\CMSIS\Include-IC:\Users\Administrator.ThinPC-PC\AppData\Local\Arm\Packs\Keil\STM32F1xx_DFP\2.3.0-D__UVISION_VERSION="529" -DSTM32F10X_MD -DRVDS_ARMCM3_LM3S102-o .\obj\stm32f10x_usart.o --omf_browse .\obj\stm32f10x_usart.crf --depend .\obj\stm32f10x_usart.d)
+I (.\STM32F10xFWLib\inc\stm32f10x_usart.h)(0x5E11EA78)
+I (.\STM32F10xFWLib\inc\stm32f10x_map.h)(0x5E11EA78)
+I (..\Source\stm32f10x_conf.h)(0x5E11EA7A)
+I (.\STM32F10xFWLib\inc\stm32f10x_type.h)(0x5E11EA78)
+I (.\STM32F10xFWLib\inc\cortexm3_macro.h)(0x5E11EA78)
+I (.\STM32F10xFWLib\inc\stm32f10x_rcc.h)(0x5E11EA78)
+F (.\STM32F10xFWLib\src\stm32f10x_gpio.c)(0x5E11EA78)(-c --cpu Cortex-M3 -D__MICROLIB -g -O0 --apcs=interwork -I ..\Common\include -I ..\..\Source\include -I .\STM32F10xFWLib\inc -I ..\Source -I ..\Source\FAT-I.\RTE\_Target_1-IC:\Users\Administrator.ThinPC-PC\AppData\Local\Arm\Packs\Keil\STM32F1xx_DFP\2.3.0\Device\Include-IC:\Keil_v5\ARM\CMSIS\Include-IC:\Users\Administrator.ThinPC-PC\AppData\Local\Arm\Packs\Keil\STM32F1xx_DFP\2.3.0-D__UVISION_VERSION="529" -DSTM32F10X_MD -DRVDS_ARMCM3_LM3S102-o .\obj\stm32f10x_gpio.o --omf_browse .\obj\stm32f10x_gpio.crf --depend .\obj\stm32f10x_gpio.d)
+I (.\STM32F10xFWLib\inc\stm32f10x_gpio.h)(0x5E11EA78)
+I (.\STM32F10xFWLib\inc\stm32f10x_map.h)(0x5E11EA78)
+I (..\Source\stm32f10x_conf.h)(0x5E11EA7A)
+I (.\STM32F10xFWLib\inc\stm32f10x_type.h)(0x5E11EA78)
+I (.\STM32F10xFWLib\inc\cortexm3_macro.h)(0x5E11EA78)
+I (.\STM32F10xFWLib\inc\stm32f10x_rcc.h)(0x5E11EA78)
+F (.\STM32F10xFWLib\src\stm32f10x_lib.c)(0x5E11EA78)(-c --cpu Cortex-M3 -D__MICROLIB -g -O0 --apcs=interwork -I ..\Common\include -I ..\..\Source\include -I .\STM32F10xFWLib\inc -I ..\Source -I ..\Source\FAT-I.\RTE\_Target_1-IC:\Users\Administrator.ThinPC-PC\AppData\Local\Arm\Packs\Keil\STM32F1xx_DFP\2.3.0\Device\Include-IC:\Keil_v5\ARM\CMSIS\Include-IC:\Users\Administrator.ThinPC-PC\AppData\Local\Arm\Packs\Keil\STM32F1xx_DFP\2.3.0-D__UVISION_VERSION="529" -DSTM32F10X_MD -DRVDS_ARMCM3_LM3S102-o .\obj\stm32f10x_lib.o --omf_browse .\obj\stm32f10x_lib.crf --depend .\obj\stm32f10x_lib.d)
+I (.\STM32F10xFWLib\inc\stm32f10x_lib.h)(0x5E11EA78)
+I (.\STM32F10xFWLib\inc\stm32f10x_map.h)(0x5E11EA78)
+I (..\Source\stm32f10x_conf.h)(0x5E11EA7A)
+I (.\STM32F10xFWLib\inc\stm32f10x_type.h)(0x5E11EA78)
+I (.\STM32F10xFWLib\inc\cortexm3_macro.h)(0x5E11EA78)
+I (.\STM32F10xFWLib\inc\stm32f10x_exti.h)(0x5E11EA78)
+I (.\STM32F10xFWLib\inc\stm32f10x_gpio.h)(0x5E11EA78)
+I (.\STM32F10xFWLib\inc\stm32f10x_nvic.h)(0x5E11EA78)
+I (.\STM32F10xFWLib\inc\stm32f10x_rcc.h)(0x5E11EA78)
+I (.\STM32F10xFWLib\inc\stm32f10x_spi.h)(0x5E11EA78)
+I (.\STM32F10xFWLib\inc\stm32f10x_systick.h)(0x5E11EA78)
+I (.\STM32F10xFWLib\inc\stm32f10x_usart.h)(0x5E11EA78)
+F (.\STM32F10xFWLib\src\stm32f10x_nvic.c)(0x5E11EA78)(-c --cpu Cortex-M3 -D__MICROLIB -g -O0 --apcs=interwork -I ..\Common\include -I ..\..\Source\include -I .\STM32F10xFWLib\inc -I ..\Source -I ..\Source\FAT-I.\RTE\_Target_1-IC:\Users\Administrator.ThinPC-PC\AppData\Local\Arm\Packs\Keil\STM32F1xx_DFP\2.3.0\Device\Include-IC:\Keil_v5\ARM\CMSIS\Include-IC:\Users\Administrator.ThinPC-PC\AppData\Local\Arm\Packs\Keil\STM32F1xx_DFP\2.3.0-D__UVISION_VERSION="529" -DSTM32F10X_MD -DRVDS_ARMCM3_LM3S102-o .\obj\stm32f10x_nvic.o --omf_browse .\obj\stm32f10x_nvic.crf --depend .\obj\stm32f10x_nvic.d)
+I (.\STM32F10xFWLib\inc\stm32f10x_nvic.h)(0x5E11EA78)
+I (.\STM32F10xFWLib\inc\stm32f10x_map.h)(0x5E11EA78)
+I (..\Source\stm32f10x_conf.h)(0x5E11EA7A)
+I (.\STM32F10xFWLib\inc\stm32f10x_type.h)(0x5E11EA78)
+I (.\STM32F10xFWLib\inc\cortexm3_macro.h)(0x5E11EA78)
+F (.\STM32F10xFWLib\src\stm32f10x_rcc.c)(0x5E11EA78)(-c --cpu Cortex-M3 -D__MICROLIB -g -O0 --apcs=interwork -I ..\Common\include -I ..\..\Source\include -I .\STM32F10xFWLib\inc -I ..\Source -I ..\Source\FAT-I.\RTE\_Target_1-IC:\Users\Administrator.ThinPC-PC\AppData\Local\Arm\Packs\Keil\STM32F1xx_DFP\2.3.0\Device\Include-IC:\Keil_v5\ARM\CMSIS\Include-IC:\Users\Administrator.ThinPC-PC\AppData\Local\Arm\Packs\Keil\STM32F1xx_DFP\2.3.0-D__UVISION_VERSION="529" -DSTM32F10X_MD -DRVDS_ARMCM3_LM3S102-o .\obj\stm32f10x_rcc.o --omf_browse .\obj\stm32f10x_rcc.crf --depend .\obj\stm32f10x_rcc.d)
+I (.\STM32F10xFWLib\inc\stm32f10x_rcc.h)(0x5E11EA78)
+I (.\STM32F10xFWLib\inc\stm32f10x_map.h)(0x5E11EA78)
+I (..\Source\stm32f10x_conf.h)(0x5E11EA7A)
+I (.\STM32F10xFWLib\inc\stm32f10x_type.h)(0x5E11EA78)
+I (.\STM32F10xFWLib\inc\cortexm3_macro.h)(0x5E11EA78)
+F (.\STM32F10xFWLib\src\stm32f10x_spi.c)(0x5E11EA78)(-c --cpu Cortex-M3 -D__MICROLIB -g -O0 --apcs=interwork -I ..\Common\include -I ..\..\Source\include -I .\STM32F10xFWLib\inc -I ..\Source -I ..\Source\FAT-I.\RTE\_Target_1-IC:\Users\Administrator.ThinPC-PC\AppData\Local\Arm\Packs\Keil\STM32F1xx_DFP\2.3.0\Device\Include-IC:\Keil_v5\ARM\CMSIS\Include-IC:\Users\Administrator.ThinPC-PC\AppData\Local\Arm\Packs\Keil\STM32F1xx_DFP\2.3.0-D__UVISION_VERSION="529" -DSTM32F10X_MD -DRVDS_ARMCM3_LM3S102-o .\obj\stm32f10x_spi.o --omf_browse .\obj\stm32f10x_spi.crf --depend .\obj\stm32f10x_spi.d)
+I (.\STM32F10xFWLib\inc\stm32f10x_spi.h)(0x5E11EA78)
+I (.\STM32F10xFWLib\inc\stm32f10x_map.h)(0x5E11EA78)
+I (..\Source\stm32f10x_conf.h)(0x5E11EA7A)
+I (.\STM32F10xFWLib\inc\stm32f10x_type.h)(0x5E11EA78)
+I (.\STM32F10xFWLib\inc\cortexm3_macro.h)(0x5E11EA78)
+I (.\STM32F10xFWLib\inc\stm32f10x_rcc.h)(0x5E11EA78)
+F (.\STM32F10xFWLib\src\stm32f10x_systick.c)(0x5E11EA78)(-c --cpu Cortex-M3 -D__MICROLIB -g -O0 --apcs=interwork -I ..\Common\include -I ..\..\Source\include -I .\STM32F10xFWLib\inc -I ..\Source -I ..\Source\FAT-I.\RTE\_Target_1-IC:\Users\Administrator.ThinPC-PC\AppData\Local\Arm\Packs\Keil\STM32F1xx_DFP\2.3.0\Device\Include-IC:\Keil_v5\ARM\CMSIS\Include-IC:\Users\Administrator.ThinPC-PC\AppData\Local\Arm\Packs\Keil\STM32F1xx_DFP\2.3.0-D__UVISION_VERSION="529" -DSTM32F10X_MD -DRVDS_ARMCM3_LM3S102-o .\obj\stm32f10x_systick.o --omf_browse .\obj\stm32f10x_systick.crf --depend .\obj\stm32f10x_systick.d)
+I (.\STM32F10xFWLib\inc\stm32f10x_systick.h)(0x5E11EA78)
+I (.\STM32F10xFWLib\inc\stm32f10x_map.h)(0x5E11EA78)
+I (..\Source\stm32f10x_conf.h)(0x5E11EA7A)
+I (.\STM32F10xFWLib\inc\stm32f10x_type.h)(0x5E11EA78)
+I (.\STM32F10xFWLib\inc\cortexm3_macro.h)(0x5E11EA78)
+F (.\STM32F10xFWLib\src\stm32f10x_tim.c)(0x5E11EA78)(-c --cpu Cortex-M3 -D__MICROLIB -g -O0 --apcs=interwork -I ..\Common\include -I ..\..\Source\include -I .\STM32F10xFWLib\inc -I ..\Source -I ..\Source\FAT-I.\RTE\_Target_1-IC:\Users\Administrator.ThinPC-PC\AppData\Local\Arm\Packs\Keil\STM32F1xx_DFP\2.3.0\Device\Include-IC:\Keil_v5\ARM\CMSIS\Include-IC:\Users\Administrator.ThinPC-PC\AppData\Local\Arm\Packs\Keil\STM32F1xx_DFP\2.3.0-D__UVISION_VERSION="529" -DSTM32F10X_MD -DRVDS_ARMCM3_LM3S102-o .\obj\stm32f10x_tim.o --omf_browse .\obj\stm32f10x_tim.crf --depend .\obj\stm32f10x_tim.d)
+I (.\STM32F10xFWLib\inc\stm32f10x_tim.h)(0x5E11EA78)
+I (.\STM32F10xFWLib\inc\stm32f10x_map.h)(0x5E11EA78)
+I (..\Source\stm32f10x_conf.h)(0x5E11EA7A)
+I (.\STM32F10xFWLib\inc\stm32f10x_type.h)(0x5E11EA78)
+I (.\STM32F10xFWLib\inc\cortexm3_macro.h)(0x5E11EA78)
+I (.\STM32F10xFWLib\inc\stm32f10x_rcc.h)(0x5E11EA78)
+F (.\ParTest\ParTest.c)(0x5E11EA78)(-c --cpu Cortex-M3 -D__MICROLIB -g -O0 --apcs=interwork -I ..\Common\include -I ..\..\Source\include -I .\STM32F10xFWLib\inc -I ..\Source -I ..\Source\FAT-I.\RTE\_Target_1-IC:\Users\Administrator.ThinPC-PC\AppData\Local\Arm\Packs\Keil\STM32F1xx_DFP\2.3.0\Device\Include-IC:\Keil_v5\ARM\CMSIS\Include-IC:\Users\Administrator.ThinPC-PC\AppData\Local\Arm\Packs\Keil\STM32F1xx_DFP\2.3.0-D__UVISION_VERSION="529" -DSTM32F10X_MD -DRVDS_ARMCM3_LM3S102-o .\obj\partest.o --omf_browse .\obj\partest.crf --depend .\obj\partest.d)
+I (..\..\Source\include\FreeRTOS.h)(0x5E11EA7A)
+I (C:\Keil_v5\ARM\ARMCC\include\stddef.h)(0x5D9AE028)
+I (C:\Keil_v5\ARM\ARMCC\include\stdint.h)(0x5D9AE028)
+I (..\Source\FreeRTOSConfig.h)(0x5E443115)
+I (..\..\Source\include\projdefs.h)(0x5E11EA7A)
+I (..\..\Source\include\portable.h)(0x5E11EA7A)
+I (..\..\Source\include\deprecated_definitions.h)(0x5E11EA7A)
+I (..\..\Source\include\../../Source/portable/RVDS/ARM_CM3/portmacro.h)(0x5E11EA7B)
+I (..\..\Source\include\mpu_wrappers.h)(0x5E11EA7A)
+I (..\..\Source\include\task.h)(0x5E11EA7A)
+I (..\..\Source\include\list.h)(0x5E11EA7A)
+I (..\Common\include\partest.h)(0x5E11EA7A)
+I (.\STM32F10xFWLib\inc\stm32f10x_lib.h)(0x5E11EA78)
+I (.\STM32F10xFWLib\inc\stm32f10x_map.h)(0x5E11EA78)
+I (..\Source\stm32f10x_conf.h)(0x5E11EA7A)
+I (.\STM32F10xFWLib\inc\stm32f10x_type.h)(0x5E11EA78)
+I (.\STM32F10xFWLib\inc\cortexm3_macro.h)(0x5E11EA78)
+I (.\STM32F10xFWLib\inc\stm32f10x_exti.h)(0x5E11EA78)
+I (.\STM32F10xFWLib\inc\stm32f10x_gpio.h)(0x5E11EA78)
+I (.\STM32F10xFWLib\inc\stm32f10x_nvic.h)(0x5E11EA78)
+I (.\STM32F10xFWLib\inc\stm32f10x_rcc.h)(0x5E11EA78)
+I (.\STM32F10xFWLib\inc\stm32f10x_spi.h)(0x5E11EA78)
+I (.\STM32F10xFWLib\inc\stm32f10x_systick.h)(0x5E11EA78)
+I (.\STM32F10xFWLib\inc\stm32f10x_usart.h)(0x5E11EA78)
+F (..\Common\Minimal\semtest.c)(0x5E11EA78)(-c --cpu Cortex-M3 -D__MICROLIB -g -O0 --apcs=interwork -I ..\Common\include -I ..\..\Source\include -I .\STM32F10xFWLib\inc -I ..\Source -I ..\Source\FAT-I.\RTE\_Target_1-IC:\Users\Administrator.ThinPC-PC\AppData\Local\Arm\Packs\Keil\STM32F1xx_DFP\2.3.0\Device\Include-IC:\Keil_v5\ARM\CMSIS\Include-IC:\Users\Administrator.ThinPC-PC\AppData\Local\Arm\Packs\Keil\STM32F1xx_DFP\2.3.0-D__UVISION_VERSION="529" -DSTM32F10X_MD -DRVDS_ARMCM3_LM3S102-o .\obj\semtest.o --omf_browse .\obj\semtest.crf --depend .\obj\semtest.d)
+I (C:\Keil_v5\ARM\ARMCC\include\stdlib.h)(0x5D9AE02A)
+I (..\..\Source\include\FreeRTOS.h)(0x5E11EA7A)
+I (C:\Keil_v5\ARM\ARMCC\include\stddef.h)(0x5D9AE028)
+I (C:\Keil_v5\ARM\ARMCC\include\stdint.h)(0x5D9AE028)
+I (..\Source\FreeRTOSConfig.h)(0x5E443115)
+I (..\..\Source\include\projdefs.h)(0x5E11EA7A)
+I (..\..\Source\include\portable.h)(0x5E11EA7A)
+I (..\..\Source\include\deprecated_definitions.h)(0x5E11EA7A)
+I (..\..\Source\include\../../Source/portable/RVDS/ARM_CM3/portmacro.h)(0x5E11EA7B)
+I (..\..\Source\include\mpu_wrappers.h)(0x5E11EA7A)
+I (..\..\Source\include\task.h)(0x5E11EA7A)
+I (..\..\Source\include\list.h)(0x5E11EA7A)
+I (..\..\Source\include\semphr.h)(0x5E11EA7A)
+I (..\..\Source\include\queue.h)(0x5E11EA7A)
+I (..\Common\include\semtest.h)(0x5E11EA7A)
+F (..\Common\Minimal\BlockQ.c)(0x5E11EA78)(-c --cpu Cortex-M3 -D__MICROLIB -g -O0 --apcs=interwork -I ..\Common\include -I ..\..\Source\include -I .\STM32F10xFWLib\inc -I ..\Source -I ..\Source\FAT-I.\RTE\_Target_1-IC:\Users\Administrator.ThinPC-PC\AppData\Local\Arm\Packs\Keil\STM32F1xx_DFP\2.3.0\Device\Include-IC:\Keil_v5\ARM\CMSIS\Include-IC:\Users\Administrator.ThinPC-PC\AppData\Local\Arm\Packs\Keil\STM32F1xx_DFP\2.3.0-D__UVISION_VERSION="529" -DSTM32F10X_MD -DRVDS_ARMCM3_LM3S102-o .\obj\blockq.o --omf_browse .\obj\blockq.crf --depend .\obj\blockq.d)
+I (C:\Keil_v5\ARM\ARMCC\include\stdlib.h)(0x5D9AE02A)
+I (..\..\Source\include\FreeRTOS.h)(0x5E11EA7A)
+I (C:\Keil_v5\ARM\ARMCC\include\stddef.h)(0x5D9AE028)
+I (C:\Keil_v5\ARM\ARMCC\include\stdint.h)(0x5D9AE028)
+I (..\Source\FreeRTOSConfig.h)(0x5E443115)
+I (..\..\Source\include\projdefs.h)(0x5E11EA7A)
+I (..\..\Source\include\portable.h)(0x5E11EA7A)
+I (..\..\Source\include\deprecated_definitions.h)(0x5E11EA7A)
+I (..\..\Source\include\../../Source/portable/RVDS/ARM_CM3/portmacro.h)(0x5E11EA7B)
+I (..\..\Source\include\mpu_wrappers.h)(0x5E11EA7A)
+I (..\..\Source\include\task.h)(0x5E11EA7A)
+I (..\..\Source\include\list.h)(0x5E11EA7A)
+I (..\..\Source\include\queue.h)(0x5E11EA7A)
+I (..\Common\include\BlockQ.h)(0x5E11EA7A)
+F (..\Common\Minimal\blocktim.c)(0x5E11EA78)(-c --cpu Cortex-M3 -D__MICROLIB -g -O0 --apcs=interwork -I ..\Common\include -I ..\..\Source\include -I .\STM32F10xFWLib\inc -I ..\Source -I ..\Source\FAT-I.\RTE\_Target_1-IC:\Users\Administrator.ThinPC-PC\AppData\Local\Arm\Packs\Keil\STM32F1xx_DFP\2.3.0\Device\Include-IC:\Keil_v5\ARM\CMSIS\Include-IC:\Users\Administrator.ThinPC-PC\AppData\Local\Arm\Packs\Keil\STM32F1xx_DFP\2.3.0-D__UVISION_VERSION="529" -DSTM32F10X_MD -DRVDS_ARMCM3_LM3S102-o .\obj\blocktim.o --omf_browse .\obj\blocktim.crf --depend .\obj\blocktim.d)
+I (..\..\Source\include\FreeRTOS.h)(0x5E11EA7A)
+I (C:\Keil_v5\ARM\ARMCC\include\stddef.h)(0x5D9AE028)
+I (C:\Keil_v5\ARM\ARMCC\include\stdint.h)(0x5D9AE028)
+I (..\Source\FreeRTOSConfig.h)(0x5E443115)
+I (..\..\Source\include\projdefs.h)(0x5E11EA7A)
+I (..\..\Source\include\portable.h)(0x5E11EA7A)
+I (..\..\Source\include\deprecated_definitions.h)(0x5E11EA7A)
+I (..\..\Source\include\../../Source/portable/RVDS/ARM_CM3/portmacro.h)(0x5E11EA7B)
+I (..\..\Source\include\mpu_wrappers.h)(0x5E11EA7A)
+I (..\..\Source\include\task.h)(0x5E11EA7A)
+I (..\..\Source\include\list.h)(0x5E11EA7A)
+I (..\..\Source\include\queue.h)(0x5E11EA7A)
+I (..\Common\include\blocktim.h)(0x5E11EA7A)
+F (..\Common\Minimal\death.c)(0x5E11EA78)(-c --cpu Cortex-M3 -D__MICROLIB -g -O0 --apcs=interwork -I ..\Common\include -I ..\..\Source\include -I .\STM32F10xFWLib\inc -I ..\Source -I ..\Source\FAT-I.\RTE\_Target_1-IC:\Users\Administrator.ThinPC-PC\AppData\Local\Arm\Packs\Keil\STM32F1xx_DFP\2.3.0\Device\Include-IC:\Keil_v5\ARM\CMSIS\Include-IC:\Users\Administrator.ThinPC-PC\AppData\Local\Arm\Packs\Keil\STM32F1xx_DFP\2.3.0-D__UVISION_VERSION="529" -DSTM32F10X_MD -DRVDS_ARMCM3_LM3S102-o .\obj\death.o --omf_browse .\obj\death.crf --depend .\obj\death.d)
+I (C:\Keil_v5\ARM\ARMCC\include\stdlib.h)(0x5D9AE02A)
+I (..\..\Source\include\FreeRTOS.h)(0x5E11EA7A)
+I (C:\Keil_v5\ARM\ARMCC\include\stddef.h)(0x5D9AE028)
+I (C:\Keil_v5\ARM\ARMCC\include\stdint.h)(0x5D9AE028)
+I (..\Source\FreeRTOSConfig.h)(0x5E443115)
+I (..\..\Source\include\projdefs.h)(0x5E11EA7A)
+I (..\..\Source\include\portable.h)(0x5E11EA7A)
+I (..\..\Source\include\deprecated_definitions.h)(0x5E11EA7A)
+I (..\..\Source\include\../../Source/portable/RVDS/ARM_CM3/portmacro.h)(0x5E11EA7B)
+I (..\..\Source\include\mpu_wrappers.h)(0x5E11EA7A)
+I (..\..\Source\include\task.h)(0x5E11EA7A)
+I (..\..\Source\include\list.h)(0x5E11EA7A)
+I (..\Common\include\death.h)(0x5E11EA7A)
+F (..\Common\Minimal\flash.c)(0x5E11EA78)(-c --cpu Cortex-M3 -D__MICROLIB -g -O0 --apcs=interwork -I ..\Common\include -I ..\..\Source\include -I .\STM32F10xFWLib\inc -I ..\Source -I ..\Source\FAT-I.\RTE\_Target_1-IC:\Users\Administrator.ThinPC-PC\AppData\Local\Arm\Packs\Keil\STM32F1xx_DFP\2.3.0\Device\Include-IC:\Keil_v5\ARM\CMSIS\Include-IC:\Users\Administrator.ThinPC-PC\AppData\Local\Arm\Packs\Keil\STM32F1xx_DFP\2.3.0-D__UVISION_VERSION="529" -DSTM32F10X_MD -DRVDS_ARMCM3_LM3S102-o .\obj\flash.o --omf_browse .\obj\flash.crf --depend .\obj\flash.d)
+I (C:\Keil_v5\ARM\ARMCC\include\stdlib.h)(0x5D9AE02A)
+I (..\..\Source\include\FreeRTOS.h)(0x5E11EA7A)
+I (C:\Keil_v5\ARM\ARMCC\include\stddef.h)(0x5D9AE028)
+I (C:\Keil_v5\ARM\ARMCC\include\stdint.h)(0x5D9AE028)
+I (..\Source\FreeRTOSConfig.h)(0x5E443115)
+I (..\..\Source\include\projdefs.h)(0x5E11EA7A)
+I (..\..\Source\include\portable.h)(0x5E11EA7A)
+I (..\..\Source\include\deprecated_definitions.h)(0x5E11EA7A)
+I (..\..\Source\include\../../Source/portable/RVDS/ARM_CM3/portmacro.h)(0x5E11EA7B)
+I (..\..\Source\include\mpu_wrappers.h)(0x5E11EA7A)
+I (..\..\Source\include\task.h)(0x5E11EA7A)
+I (..\..\Source\include\list.h)(0x5E11EA7A)
+I (..\Common\include\partest.h)(0x5E11EA7A)
+I (..\Common\include\flash.h)(0x5E11EA7A)
+F (..\Common\Minimal\integer.c)(0x5E11EA78)(-c --cpu Cortex-M3 -D__MICROLIB -g -O0 --apcs=interwork -I ..\Common\include -I ..\..\Source\include -I .\STM32F10xFWLib\inc -I ..\Source -I ..\Source\FAT-I.\RTE\_Target_1-IC:\Users\Administrator.ThinPC-PC\AppData\Local\Arm\Packs\Keil\STM32F1xx_DFP\2.3.0\Device\Include-IC:\Keil_v5\ARM\CMSIS\Include-IC:\Users\Administrator.ThinPC-PC\AppData\Local\Arm\Packs\Keil\STM32F1xx_DFP\2.3.0-D__UVISION_VERSION="529" -DSTM32F10X_MD -DRVDS_ARMCM3_LM3S102-o .\obj\integer.o --omf_browse .\obj\integer.crf --depend .\obj\integer.d)
+I (C:\Keil_v5\ARM\ARMCC\include\stdlib.h)(0x5D9AE02A)
+I (..\..\Source\include\FreeRTOS.h)(0x5E11EA7A)
+I (C:\Keil_v5\ARM\ARMCC\include\stddef.h)(0x5D9AE028)
+I (C:\Keil_v5\ARM\ARMCC\include\stdint.h)(0x5D9AE028)
+I (..\Source\FreeRTOSConfig.h)(0x5E443115)
+I (..\..\Source\include\projdefs.h)(0x5E11EA7A)
+I (..\..\Source\include\portable.h)(0x5E11EA7A)
+I (..\..\Source\include\deprecated_definitions.h)(0x5E11EA7A)
+I (..\..\Source\include\../../Source/portable/RVDS/ARM_CM3/portmacro.h)(0x5E11EA7B)
+I (..\..\Source\include\mpu_wrappers.h)(0x5E11EA7A)
+I (..\..\Source\include\task.h)(0x5E11EA7A)
+I (..\..\Source\include\list.h)(0x5E11EA7A)
+I (..\Common\include\integer.h)(0x5E11EA7A)
+F (..\Common\Minimal\PollQ.c)(0x5E11EA78)(-c --cpu Cortex-M3 -D__MICROLIB -g -O0 --apcs=interwork -I ..\Common\include -I ..\..\Source\include -I .\STM32F10xFWLib\inc -I ..\Source -I ..\Source\FAT-I.\RTE\_Target_1-IC:\Users\Administrator.ThinPC-PC\AppData\Local\Arm\Packs\Keil\STM32F1xx_DFP\2.3.0\Device\Include-IC:\Keil_v5\ARM\CMSIS\Include-IC:\Users\Administrator.ThinPC-PC\AppData\Local\Arm\Packs\Keil\STM32F1xx_DFP\2.3.0-D__UVISION_VERSION="529" -DSTM32F10X_MD -DRVDS_ARMCM3_LM3S102-o .\obj\pollq.o --omf_browse .\obj\pollq.crf --depend .\obj\pollq.d)
+I (C:\Keil_v5\ARM\ARMCC\include\stdlib.h)(0x5D9AE02A)
+I (..\..\Source\include\FreeRTOS.h)(0x5E11EA7A)
+I (C:\Keil_v5\ARM\ARMCC\include\stddef.h)(0x5D9AE028)
+I (C:\Keil_v5\ARM\ARMCC\include\stdint.h)(0x5D9AE028)
+I (..\Source\FreeRTOSConfig.h)(0x5E443115)
+I (..\..\Source\include\projdefs.h)(0x5E11EA7A)
+I (..\..\Source\include\portable.h)(0x5E11EA7A)
+I (..\..\Source\include\deprecated_definitions.h)(0x5E11EA7A)
+I (..\..\Source\include\../../Source/portable/RVDS/ARM_CM3/portmacro.h)(0x5E11EA7B)
+I (..\..\Source\include\mpu_wrappers.h)(0x5E11EA7A)
+I (..\..\Source\include\task.h)(0x5E11EA7A)
+I (..\..\Source\include\list.h)(0x5E11EA7A)
+I (..\..\Source\include\queue.h)(0x5E11EA7A)
+I (..\Common\include\PollQ.h)(0x5E11EA7A)
+F (..\Source\main.c)(0x5E497046)(-c --cpu Cortex-M3 -D__MICROLIB -g -O0 --apcs=interwork -I ..\Common\include -I ..\..\Source\include -I .\STM32F10xFWLib\inc -I ..\Source -I ..\Source\FAT-I.\RTE\_Target_1-IC:\Users\Administrator.ThinPC-PC\AppData\Local\Arm\Packs\Keil\STM32F1xx_DFP\2.3.0\Device\Include-IC:\Keil_v5\ARM\CMSIS\Include-IC:\Users\Administrator.ThinPC-PC\AppData\Local\Arm\Packs\Keil\STM32F1xx_DFP\2.3.0-D__UVISION_VERSION="529" -DSTM32F10X_MD -DRVDS_ARMCM3_LM3S102-o .\obj\main.o --omf_browse .\obj\main.crf --depend .\obj\main.d)
+I (C:\Keil_v5\ARM\ARMCC\include\stdio.h)(0x5D9AE02A)
+I (C:\Keil_v5\ARM\ARMCC\include\string.h)(0x5D9AE028)
+I (..\..\Source\include\FreeRTOS.h)(0x5E11EA7A)
+I (C:\Keil_v5\ARM\ARMCC\include\stddef.h)(0x5D9AE028)
+I (C:\Keil_v5\ARM\ARMCC\include\stdint.h)(0x5D9AE028)
+I (..\Source\FreeRTOSConfig.h)(0x5E443115)
+I (..\..\Source\include\projdefs.h)(0x5E11EA7A)
+I (..\..\Source\include\portable.h)(0x5E11EA7A)
+I (..\..\Source\include\deprecated_definitions.h)(0x5E11EA7A)
+I (..\..\Source\include\../../Source/portable/RVDS/ARM_CM3/portmacro.h)(0x5E11EA7B)
+I (..\..\Source\include\mpu_wrappers.h)(0x5E11EA7A)
+I (..\..\Source\include\task.h)(0x5E11EA7A)
+I (..\..\Source\include\list.h)(0x5E11EA7A)
+I (..\..\Source\include\queue.h)(0x5E11EA7A)
+I (.\STM32F10xFWLib\inc\stm32f10x_it.h)(0x5E11EA78)
+I (.\STM32F10xFWLib\inc\stm32f10x_lib.h)(0x5E11EA78)
+I (.\STM32F10xFWLib\inc\stm32f10x_map.h)(0x5E11EA78)
+I (..\Source\stm32f10x_conf.h)(0x5E11EA7A)
+I (.\STM32F10xFWLib\inc\stm32f10x_type.h)(0x5E11EA78)
+I (.\STM32F10xFWLib\inc\cortexm3_macro.h)(0x5E11EA78)
+I (.\STM32F10xFWLib\inc\stm32f10x_exti.h)(0x5E11EA78)
+I (.\STM32F10xFWLib\inc\stm32f10x_gpio.h)(0x5E11EA78)
+I (.\STM32F10xFWLib\inc\stm32f10x_nvic.h)(0x5E11EA78)
+I (.\STM32F10xFWLib\inc\stm32f10x_rcc.h)(0x5E11EA78)
+I (.\STM32F10xFWLib\inc\stm32f10x_spi.h)(0x5E11EA78)
+I (.\STM32F10xFWLib\inc\stm32f10x_systick.h)(0x5E11EA78)
+I (.\STM32F10xFWLib\inc\stm32f10x_usart.h)(0x5E11EA78)
+I (..\Common\include\serial.h)(0x5E11EA7A)
+I (..\..\Source\include\semphr.h)(0x5E11EA7A)
+I (..\Source\sim908.h)(0x5E4427EE)
+I (..\Source\lcd_nokia5110/nokia_5110.h)(0x5E11EA7A)
+I (..\Source\FAT/ff.h)(0x5E42CDC9)
+I (..\Source\FAT/integer.h)(0x5E42CDC9)
+I (..\Source\FAT/ffconf.h)(0x5E42CDC9)
+I (..\Source\stm32_sd_spi.h)(0x5E42CDC9)
+I (C:\Keil_v5\ARM\ARMCC\include\stdlib.h)(0x5D9AE02A)
+I (..\Source\stm32_spi.h)(0x5E42CDC9)
+F (..\Source\sim908.c)(0x5E496F7E)(-c --cpu Cortex-M3 -D__MICROLIB -g -O0 --apcs=interwork -I ..\Common\include -I ..\..\Source\include -I .\STM32F10xFWLib\inc -I ..\Source -I ..\Source\FAT-I.\RTE\_Target_1-IC:\Users\Administrator.ThinPC-PC\AppData\Local\Arm\Packs\Keil\STM32F1xx_DFP\2.3.0\Device\Include-IC:\Keil_v5\ARM\CMSIS\Include-IC:\Users\Administrator.ThinPC-PC\AppData\Local\Arm\Packs\Keil\STM32F1xx_DFP\2.3.0-D__UVISION_VERSION="529" -DSTM32F10X_MD -DRVDS_ARMCM3_LM3S102-o .\obj\sim908.o --omf_browse .\obj\sim908.crf --depend .\obj\sim908.d)
+I (C:\Keil_v5\ARM\ARMCC\include\stdio.h)(0x5D9AE02A)
+I (C:\Keil_v5\ARM\ARMCC\include\stdlib.h)(0x5D9AE02A)
+I (C:\Keil_v5\ARM\ARMCC\include\string.h)(0x5D9AE028)
+I (..\..\Source\include\FreeRTOS.h)(0x5E11EA7A)
+I (C:\Keil_v5\ARM\ARMCC\include\stddef.h)(0x5D9AE028)
+I (C:\Keil_v5\ARM\ARMCC\include\stdint.h)(0x5D9AE028)
+I (..\Source\FreeRTOSConfig.h)(0x5E443115)
+I (..\..\Source\include\projdefs.h)(0x5E11EA7A)
+I (..\..\Source\include\portable.h)(0x5E11EA7A)
+I (..\..\Source\include\deprecated_definitions.h)(0x5E11EA7A)
+I (..\..\Source\include\../../Source/portable/RVDS/ARM_CM3/portmacro.h)(0x5E11EA7B)
+I (..\..\Source\include\mpu_wrappers.h)(0x5E11EA7A)
+I (..\..\Source\include\queue.h)(0x5E11EA7A)
+I (..\..\Source\include\semphr.h)(0x5E11EA7A)
+I (.\STM32F10xFWLib\inc\stm32f10x_lib.h)(0x5E11EA78)
+I (.\STM32F10xFWLib\inc\stm32f10x_map.h)(0x5E11EA78)
+I (..\Source\stm32f10x_conf.h)(0x5E11EA7A)
+I (.\STM32F10xFWLib\inc\stm32f10x_type.h)(0x5E11EA78)
+I (.\STM32F10xFWLib\inc\cortexm3_macro.h)(0x5E11EA78)
+I (.\STM32F10xFWLib\inc\stm32f10x_exti.h)(0x5E11EA78)
+I (.\STM32F10xFWLib\inc\stm32f10x_gpio.h)(0x5E11EA78)
+I (.\STM32F10xFWLib\inc\stm32f10x_nvic.h)(0x5E11EA78)
+I (.\STM32F10xFWLib\inc\stm32f10x_rcc.h)(0x5E11EA78)
+I (.\STM32F10xFWLib\inc\stm32f10x_spi.h)(0x5E11EA78)
+I (.\STM32F10xFWLib\inc\stm32f10x_systick.h)(0x5E11EA78)
+I (.\STM32F10xFWLib\inc\stm32f10x_usart.h)(0x5E11EA78)
+I (..\Common\include\serial.h)(0x5E11EA7A)
+I (..\Source\sim908.h)(0x5E4427EE)
+I (..\..\Source\include\task.h)(0x5E11EA7A)
+I (..\..\Source\include\list.h)(0x5E11EA7A)
+F (..\Source\lcd_nokia5110\nokia_5110.c)(0x5E11EA7A)(-c --cpu Cortex-M3 -D__MICROLIB -g -O0 --apcs=interwork -I ..\Common\include -I ..\..\Source\include -I .\STM32F10xFWLib\inc -I ..\Source -I ..\Source\FAT-I.\RTE\_Target_1-IC:\Users\Administrator.ThinPC-PC\AppData\Local\Arm\Packs\Keil\STM32F1xx_DFP\2.3.0\Device\Include-IC:\Keil_v5\ARM\CMSIS\Include-IC:\Users\Administrator.ThinPC-PC\AppData\Local\Arm\Packs\Keil\STM32F1xx_DFP\2.3.0-D__UVISION_VERSION="529" -DSTM32F10X_MD -DRVDS_ARMCM3_LM3S102-o .\obj\nokia_5110.o --omf_browse .\obj\nokia_5110.crf --depend .\obj\nokia_5110.d)
+I (..\Source\lcd_nokia5110\nokia_5110.h)(0x5E11EA7A)
+I (.\STM32F10xFWLib\inc\stm32f10x_lib.h)(0x5E11EA78)
+I (.\STM32F10xFWLib\inc\stm32f10x_map.h)(0x5E11EA78)
+I (..\Source\stm32f10x_conf.h)(0x5E11EA7A)
+I (.\STM32F10xFWLib\inc\stm32f10x_type.h)(0x5E11EA78)
+I (.\STM32F10xFWLib\inc\cortexm3_macro.h)(0x5E11EA78)
+I (.\STM32F10xFWLib\inc\stm32f10x_exti.h)(0x5E11EA78)
+I (.\STM32F10xFWLib\inc\stm32f10x_gpio.h)(0x5E11EA78)
+I (.\STM32F10xFWLib\inc\stm32f10x_nvic.h)(0x5E11EA78)
+I (.\STM32F10xFWLib\inc\stm32f10x_rcc.h)(0x5E11EA78)
+I (.\STM32F10xFWLib\inc\stm32f10x_spi.h)(0x5E11EA78)
+I (.\STM32F10xFWLib\inc\stm32f10x_systick.h)(0x5E11EA78)
+I (.\STM32F10xFWLib\inc\stm32f10x_usart.h)(0x5E11EA78)
+I (..\Source\lcd_nokia5110\english_6x8_pixel.h)(0x5E11EA7A)
+F (.\timertest.c)(0x5E11EA78)(-c --cpu Cortex-M3 -D__MICROLIB -g -O0 --apcs=interwork -I ..\Common\include -I ..\..\Source\include -I .\STM32F10xFWLib\inc -I ..\Source -I ..\Source\FAT-I.\RTE\_Target_1-IC:\Users\Administrator.ThinPC-PC\AppData\Local\Arm\Packs\Keil\STM32F1xx_DFP\2.3.0\Device\Include-IC:\Keil_v5\ARM\CMSIS\Include-IC:\Users\Administrator.ThinPC-PC\AppData\Local\Arm\Packs\Keil\STM32F1xx_DFP\2.3.0-D__UVISION_VERSION="529" -DSTM32F10X_MD -DRVDS_ARMCM3_LM3S102-o .\obj\timertest.o --omf_browse .\obj\timertest.crf --depend .\obj\timertest.d)
+I (..\..\Source\include\FreeRTOS.h)(0x5E11EA7A)
+I (C:\Keil_v5\ARM\ARMCC\include\stddef.h)(0x5D9AE028)
+I (C:\Keil_v5\ARM\ARMCC\include\stdint.h)(0x5D9AE028)
+I (..\Source\FreeRTOSConfig.h)(0x5E443115)
+I (..\..\Source\include\projdefs.h)(0x5E11EA7A)
+I (..\..\Source\include\portable.h)(0x5E11EA7A)
+I (..\..\Source\include\deprecated_definitions.h)(0x5E11EA7A)
+I (..\..\Source\include\../../Source/portable/RVDS/ARM_CM3/portmacro.h)(0x5E11EA7B)
+I (..\..\Source\include\mpu_wrappers.h)(0x5E11EA7A)
+I (.\STM32F10xFWLib\inc\stm32f10x_lib.h)(0x5E11EA78)
+I (.\STM32F10xFWLib\inc\stm32f10x_map.h)(0x5E11EA78)
+I (..\Source\stm32f10x_conf.h)(0x5E11EA7A)
+I (.\STM32F10xFWLib\inc\stm32f10x_type.h)(0x5E11EA78)
+I (.\STM32F10xFWLib\inc\cortexm3_macro.h)(0x5E11EA78)
+I (.\STM32F10xFWLib\inc\stm32f10x_exti.h)(0x5E11EA78)
+I (.\STM32F10xFWLib\inc\stm32f10x_gpio.h)(0x5E11EA78)
+I (.\STM32F10xFWLib\inc\stm32f10x_nvic.h)(0x5E11EA78)
+I (.\STM32F10xFWLib\inc\stm32f10x_rcc.h)(0x5E11EA78)
+I (.\STM32F10xFWLib\inc\stm32f10x_spi.h)(0x5E11EA78)
+I (.\STM32F10xFWLib\inc\stm32f10x_systick.h)(0x5E11EA78)
+I (.\STM32F10xFWLib\inc\stm32f10x_usart.h)(0x5E11EA78)
+I (.\STM32F10xFWLib\inc\stm32f10x_tim.h)(0x5E11EA78)
+F (..\Source\serial\serial.c)(0x5E4815A8)(-c --cpu Cortex-M3 -D__MICROLIB -g -O0 --apcs=interwork -I ..\Common\include -I ..\..\Source\include -I .\STM32F10xFWLib\inc -I ..\Source -I ..\Source\FAT-I.\RTE\_Target_1-IC:\Users\Administrator.ThinPC-PC\AppData\Local\Arm\Packs\Keil\STM32F1xx_DFP\2.3.0\Device\Include-IC:\Keil_v5\ARM\CMSIS\Include-IC:\Users\Administrator.ThinPC-PC\AppData\Local\Arm\Packs\Keil\STM32F1xx_DFP\2.3.0-D__UVISION_VERSION="529" -DSTM32F10X_MD -DRVDS_ARMCM3_LM3S102-o .\obj\serial.o --omf_browse .\obj\serial.crf --depend .\obj\serial.d)
+I (..\Common\include\serial.h)(0x5E11EA7A)
+I (..\..\Source\include\FreeRTOS.h)(0x5E11EA7A)
+I (C:\Keil_v5\ARM\ARMCC\include\stddef.h)(0x5D9AE028)
+I (C:\Keil_v5\ARM\ARMCC\include\stdint.h)(0x5D9AE028)
+I (..\Source\FreeRTOSConfig.h)(0x5E443115)
+I (..\..\Source\include\projdefs.h)(0x5E11EA7A)
+I (..\..\Source\include\portable.h)(0x5E11EA7A)
+I (..\..\Source\include\deprecated_definitions.h)(0x5E11EA7A)
+I (..\..\Source\include\../../Source/portable/RVDS/ARM_CM3/portmacro.h)(0x5E11EA7B)
+I (..\..\Source\include\mpu_wrappers.h)(0x5E11EA7A)
+I (..\..\Source\include\queue.h)(0x5E11EA7A)
+I (..\..\Source\include\semphr.h)(0x5E11EA7A)
+I (.\STM32F10xFWLib\inc\stm32f10x_lib.h)(0x5E11EA78)
+I (.\STM32F10xFWLib\inc\stm32f10x_map.h)(0x5E11EA78)
+I (..\Source\stm32f10x_conf.h)(0x5E11EA7A)
+I (.\STM32F10xFWLib\inc\stm32f10x_type.h)(0x5E11EA78)
+I (.\STM32F10xFWLib\inc\cortexm3_macro.h)(0x5E11EA78)
+I (.\STM32F10xFWLib\inc\stm32f10x_exti.h)(0x5E11EA78)
+I (.\STM32F10xFWLib\inc\stm32f10x_gpio.h)(0x5E11EA78)
+I (.\STM32F10xFWLib\inc\stm32f10x_nvic.h)(0x5E11EA78)
+I (.\STM32F10xFWLib\inc\stm32f10x_rcc.h)(0x5E11EA78)
+I (.\STM32F10xFWLib\inc\stm32f10x_spi.h)(0x5E11EA78)
+I (.\STM32F10xFWLib\inc\stm32f10x_systick.h)(0x5E11EA78)
+I (.\STM32F10xFWLib\inc\stm32f10x_usart.h)(0x5E11EA78)
+F (..\Source\stm32_spi.c)(0x5E42CDC9)(-c --cpu Cortex-M3 -D__MICROLIB -g -O0 --apcs=interwork -I ..\Common\include -I ..\..\Source\include -I .\STM32F10xFWLib\inc -I ..\Source -I ..\Source\FAT-I.\RTE\_Target_1-IC:\Users\Administrator.ThinPC-PC\AppData\Local\Arm\Packs\Keil\STM32F1xx_DFP\2.3.0\Device\Include-IC:\Keil_v5\ARM\CMSIS\Include-IC:\Users\Administrator.ThinPC-PC\AppData\Local\Arm\Packs\Keil\STM32F1xx_DFP\2.3.0-D__UVISION_VERSION="529" -DSTM32F10X_MD -DRVDS_ARMCM3_LM3S102-o .\obj\stm32_spi.o --omf_browse .\obj\stm32_spi.crf --depend .\obj\stm32_spi.d)
+I (..\Source\stm32_spi.h)(0x5E42CDC9)
+I (C:\Keil_v5\ARM\ARMCC\include\stdio.h)(0x5D9AE02A)
+I (C:\Keil_v5\ARM\ARMCC\include\stdlib.h)(0x5D9AE02A)
+I (C:\Keil_v5\ARM\ARMCC\include\string.h)(0x5D9AE028)
+I (..\..\Source\include\FreeRTOS.h)(0x5E11EA7A)
+I (C:\Keil_v5\ARM\ARMCC\include\stddef.h)(0x5D9AE028)
+I (C:\Keil_v5\ARM\ARMCC\include\stdint.h)(0x5D9AE028)
+I (..\Source\FreeRTOSConfig.h)(0x5E443115)
+I (..\..\Source\include\projdefs.h)(0x5E11EA7A)
+I (..\..\Source\include\portable.h)(0x5E11EA7A)
+I (..\..\Source\include\deprecated_definitions.h)(0x5E11EA7A)
+I (..\..\Source\include\../../Source/portable/RVDS/ARM_CM3/portmacro.h)(0x5E11EA7B)
+I (..\..\Source\include\mpu_wrappers.h)(0x5E11EA7A)
+I (..\..\Source\include\queue.h)(0x5E11EA7A)
+I (..\..\Source\include\semphr.h)(0x5E11EA7A)
+I (.\STM32F10xFWLib\inc\stm32f10x_lib.h)(0x5E11EA78)
+I (.\STM32F10xFWLib\inc\stm32f10x_map.h)(0x5E11EA78)
+I (..\Source\stm32f10x_conf.h)(0x5E11EA7A)
+I (.\STM32F10xFWLib\inc\stm32f10x_type.h)(0x5E11EA78)
+I (.\STM32F10xFWLib\inc\cortexm3_macro.h)(0x5E11EA78)
+I (.\STM32F10xFWLib\inc\stm32f10x_exti.h)(0x5E11EA78)
+I (.\STM32F10xFWLib\inc\stm32f10x_gpio.h)(0x5E11EA78)
+I (.\STM32F10xFWLib\inc\stm32f10x_nvic.h)(0x5E11EA78)
+I (.\STM32F10xFWLib\inc\stm32f10x_rcc.h)(0x5E11EA78)
+I (.\STM32F10xFWLib\inc\stm32f10x_spi.h)(0x5E11EA78)
+I (.\STM32F10xFWLib\inc\stm32f10x_systick.h)(0x5E11EA78)
+I (.\STM32F10xFWLib\inc\stm32f10x_usart.h)(0x5E11EA78)
+I (..\Source\stm32_pins.h)(0x5E42CDC9)
+F (..\Source\FAT\diskio.c)(0x5E42CDC9)(-c --cpu Cortex-M3 -D__MICROLIB -g -O0 --apcs=interwork -I ..\Common\include -I ..\..\Source\include -I .\STM32F10xFWLib\inc -I ..\Source -I ..\Source\FAT-I.\RTE\_Target_1-IC:\Users\Administrator.ThinPC-PC\AppData\Local\Arm\Packs\Keil\STM32F1xx_DFP\2.3.0\Device\Include-IC:\Keil_v5\ARM\CMSIS\Include-IC:\Users\Administrator.ThinPC-PC\AppData\Local\Arm\Packs\Keil\STM32F1xx_DFP\2.3.0-D__UVISION_VERSION="529" -DSTM32F10X_MD -DRVDS_ARMCM3_LM3S102-o .\obj\diskio.o --omf_browse .\obj\diskio.crf --depend .\obj\diskio.d)
+I (..\Source\FAT\diskio.h)(0x5E42CDC9)
+I (..\Source\FAT\integer.h)(0x5E42CDC9)
+I (..\Source\FAT\ffconf.h)(0x5E42CDC9)
+I (..\Source\stm32_sd_spi.h)(0x5E42CDC9)
+I (C:\Keil_v5\ARM\ARMCC\include\stdio.h)(0x5D9AE02A)
+I (C:\Keil_v5\ARM\ARMCC\include\stdlib.h)(0x5D9AE02A)
+I (C:\Keil_v5\ARM\ARMCC\include\string.h)(0x5D9AE028)
+I (..\..\Source\include\FreeRTOS.h)(0x5E11EA7A)
+I (C:\Keil_v5\ARM\ARMCC\include\stddef.h)(0x5D9AE028)
+I (C:\Keil_v5\ARM\ARMCC\include\stdint.h)(0x5D9AE028)
+I (..\Source\FreeRTOSConfig.h)(0x5E443115)
+I (..\..\Source\include\projdefs.h)(0x5E11EA7A)
+I (..\..\Source\include\portable.h)(0x5E11EA7A)
+I (..\..\Source\include\deprecated_definitions.h)(0x5E11EA7A)
+I (..\..\Source\include\../../Source/portable/RVDS/ARM_CM3/portmacro.h)(0x5E11EA7B)
+I (..\..\Source\include\mpu_wrappers.h)(0x5E11EA7A)
+I (..\..\Source\include\queue.h)(0x5E11EA7A)
+I (..\..\Source\include\semphr.h)(0x5E11EA7A)
+I (.\STM32F10xFWLib\inc\stm32f10x_lib.h)(0x5E11EA78)
+I (.\STM32F10xFWLib\inc\stm32f10x_map.h)(0x5E11EA78)
+I (..\Source\stm32f10x_conf.h)(0x5E11EA7A)
+I (.\STM32F10xFWLib\inc\stm32f10x_type.h)(0x5E11EA78)
+I (.\STM32F10xFWLib\inc\cortexm3_macro.h)(0x5E11EA78)
+I (.\STM32F10xFWLib\inc\stm32f10x_exti.h)(0x5E11EA78)
+I (.\STM32F10xFWLib\inc\stm32f10x_gpio.h)(0x5E11EA78)
+I (.\STM32F10xFWLib\inc\stm32f10x_nvic.h)(0x5E11EA78)
+I (.\STM32F10xFWLib\inc\stm32f10x_rcc.h)(0x5E11EA78)
+I (.\STM32F10xFWLib\inc\stm32f10x_spi.h)(0x5E11EA78)
+I (.\STM32F10xFWLib\inc\stm32f10x_systick.h)(0x5E11EA78)
+I (.\STM32F10xFWLib\inc\stm32f10x_usart.h)(0x5E11EA78)
+F (..\Source\FAT\ff.c)(0x5E42CDC9)(-c --cpu Cortex-M3 -D__MICROLIB -g -O0 --apcs=interwork -I ..\Common\include -I ..\..\Source\include -I .\STM32F10xFWLib\inc -I ..\Source -I ..\Source\FAT-I.\RTE\_Target_1-IC:\Users\Administrator.ThinPC-PC\AppData\Local\Arm\Packs\Keil\STM32F1xx_DFP\2.3.0\Device\Include-IC:\Keil_v5\ARM\CMSIS\Include-IC:\Users\Administrator.ThinPC-PC\AppData\Local\Arm\Packs\Keil\STM32F1xx_DFP\2.3.0-D__UVISION_VERSION="529" -DSTM32F10X_MD -DRVDS_ARMCM3_LM3S102-o .\obj\ff.o --omf_browse .\obj\ff.crf --depend .\obj\ff.d)
+I (..\Source\FAT\ff.h)(0x5E42CDC9)
+I (..\Source\FAT\integer.h)(0x5E42CDC9)
+I (..\Source\FAT\ffconf.h)(0x5E42CDC9)
+I (..\Source\FAT\diskio.h)(0x5E42CDC9)
+F (..\Source\stm32_sd_spi.c)(0x5E46D109)(-c --cpu Cortex-M3 -D__MICROLIB -g -O0 --apcs=interwork -I ..\Common\include -I ..\..\Source\include -I .\STM32F10xFWLib\inc -I ..\Source -I ..\Source\FAT-I.\RTE\_Target_1-IC:\Users\Administrator.ThinPC-PC\AppData\Local\Arm\Packs\Keil\STM32F1xx_DFP\2.3.0\Device\Include-IC:\Keil_v5\ARM\CMSIS\Include-IC:\Users\Administrator.ThinPC-PC\AppData\Local\Arm\Packs\Keil\STM32F1xx_DFP\2.3.0-D__UVISION_VERSION="529" -DSTM32F10X_MD -DRVDS_ARMCM3_LM3S102-o .\obj\stm32_sd_spi.o --omf_browse .\obj\stm32_sd_spi.crf --depend .\obj\stm32_sd_spi.d)
+I (..\Source\stm32_sd_spi.h)(0x5E42CDC9)
+I (C:\Keil_v5\ARM\ARMCC\include\stdio.h)(0x5D9AE02A)
+I (C:\Keil_v5\ARM\ARMCC\include\stdlib.h)(0x5D9AE02A)
+I (C:\Keil_v5\ARM\ARMCC\include\string.h)(0x5D9AE028)
+I (..\..\Source\include\FreeRTOS.h)(0x5E11EA7A)
+I (C:\Keil_v5\ARM\ARMCC\include\stddef.h)(0x5D9AE028)
+I (C:\Keil_v5\ARM\ARMCC\include\stdint.h)(0x5D9AE028)
+I (..\Source\FreeRTOSConfig.h)(0x5E443115)
+I (..\..\Source\include\projdefs.h)(0x5E11EA7A)
+I (..\..\Source\include\portable.h)(0x5E11EA7A)
+I (..\..\Source\include\deprecated_definitions.h)(0x5E11EA7A)
+I (..\..\Source\include\../../Source/portable/RVDS/ARM_CM3/portmacro.h)(0x5E11EA7B)
+I (..\..\Source\include\mpu_wrappers.h)(0x5E11EA7A)
+I (..\..\Source\include\queue.h)(0x5E11EA7A)
+I (..\..\Source\include\semphr.h)(0x5E11EA7A)
+I (.\STM32F10xFWLib\inc\stm32f10x_lib.h)(0x5E11EA78)
+I (.\STM32F10xFWLib\inc\stm32f10x_map.h)(0x5E11EA78)
+I (..\Source\stm32f10x_conf.h)(0x5E11EA7A)
+I (.\STM32F10xFWLib\inc\stm32f10x_type.h)(0x5E11EA78)
+I (.\STM32F10xFWLib\inc\cortexm3_macro.h)(0x5E11EA78)
+I (.\STM32F10xFWLib\inc\stm32f10x_exti.h)(0x5E11EA78)
+I (.\STM32F10xFWLib\inc\stm32f10x_gpio.h)(0x5E11EA78)
+I (.\STM32F10xFWLib\inc\stm32f10x_nvic.h)(0x5E11EA78)
+I (.\STM32F10xFWLib\inc\stm32f10x_rcc.h)(0x5E11EA78)
+I (.\STM32F10xFWLib\inc\stm32f10x_spi.h)(0x5E11EA78)
+I (.\STM32F10xFWLib\inc\stm32f10x_systick.h)(0x5E11EA78)
+I (.\STM32F10xFWLib\inc\stm32f10x_usart.h)(0x5E11EA78)
+I (..\Source\stm32_spi.h)(0x5E42CDC9)
+I (..\Source\stm32_pins.h)(0x5E42CDC9)
+F (..\..\Source\tasks.c)(0x5E11EA7B)(-c --cpu Cortex-M3 -D__MICROLIB -g -O0 --apcs=interwork -I ..\Common\include -I ..\..\Source\include -I .\STM32F10xFWLib\inc -I ..\Source -I ..\Source\FAT-I.\RTE\_Target_1-IC:\Users\Administrator.ThinPC-PC\AppData\Local\Arm\Packs\Keil\STM32F1xx_DFP\2.3.0\Device\Include-IC:\Keil_v5\ARM\CMSIS\Include-IC:\Users\Administrator.ThinPC-PC\AppData\Local\Arm\Packs\Keil\STM32F1xx_DFP\2.3.0-D__UVISION_VERSION="529" -DSTM32F10X_MD -DRVDS_ARMCM3_LM3S102-o .\obj\tasks.o --omf_browse .\obj\tasks.crf --depend .\obj\tasks.d)
+I (C:\Keil_v5\ARM\ARMCC\include\stdlib.h)(0x5D9AE02A)
+I (C:\Keil_v5\ARM\ARMCC\include\string.h)(0x5D9AE028)
+I (..\..\Source\include\FreeRTOS.h)(0x5E11EA7A)
+I (C:\Keil_v5\ARM\ARMCC\include\stddef.h)(0x5D9AE028)
+I (C:\Keil_v5\ARM\ARMCC\include\stdint.h)(0x5D9AE028)
+I (..\Source\FreeRTOSConfig.h)(0x5E443115)
+I (..\..\Source\include\projdefs.h)(0x5E11EA7A)
+I (..\..\Source\include\portable.h)(0x5E11EA7A)
+I (..\..\Source\include\deprecated_definitions.h)(0x5E11EA7A)
+I (..\..\Source\include\../../Source/portable/RVDS/ARM_CM3/portmacro.h)(0x5E11EA7B)
+I (..\..\Source\include\mpu_wrappers.h)(0x5E11EA7A)
+I (..\..\Source\include\task.h)(0x5E11EA7A)
+I (..\..\Source\include\list.h)(0x5E11EA7A)
+I (..\..\Source\include\timers.h)(0x5E11EA7A)
+I (..\..\Source\include\StackMacros.h)(0x5E11EA7A)
+F (..\..\Source\list.c)(0x5E11EA7A)(-c --cpu Cortex-M3 -D__MICROLIB -g -O0 --apcs=interwork -I ..\Common\include -I ..\..\Source\include -I .\STM32F10xFWLib\inc -I ..\Source -I ..\Source\FAT-I.\RTE\_Target_1-IC:\Users\Administrator.ThinPC-PC\AppData\Local\Arm\Packs\Keil\STM32F1xx_DFP\2.3.0\Device\Include-IC:\Keil_v5\ARM\CMSIS\Include-IC:\Users\Administrator.ThinPC-PC\AppData\Local\Arm\Packs\Keil\STM32F1xx_DFP\2.3.0-D__UVISION_VERSION="529" -DSTM32F10X_MD -DRVDS_ARMCM3_LM3S102-o .\obj\list.o --omf_browse .\obj\list.crf --depend .\obj\list.d)
+I (C:\Keil_v5\ARM\ARMCC\include\stdlib.h)(0x5D9AE02A)
+I (..\..\Source\include\FreeRTOS.h)(0x5E11EA7A)
+I (C:\Keil_v5\ARM\ARMCC\include\stddef.h)(0x5D9AE028)
+I (C:\Keil_v5\ARM\ARMCC\include\stdint.h)(0x5D9AE028)
+I (..\Source\FreeRTOSConfig.h)(0x5E443115)
+I (..\..\Source\include\projdefs.h)(0x5E11EA7A)
+I (..\..\Source\include\portable.h)(0x5E11EA7A)
+I (..\..\Source\include\deprecated_definitions.h)(0x5E11EA7A)
+I (..\..\Source\include\../../Source/portable/RVDS/ARM_CM3/portmacro.h)(0x5E11EA7B)
+I (..\..\Source\include\mpu_wrappers.h)(0x5E11EA7A)
+I (..\..\Source\include\list.h)(0x5E11EA7A)
+F (..\..\Source\queue.c)(0x5E11EA7B)(-c --cpu Cortex-M3 -D__MICROLIB -g -O0 --apcs=interwork -I ..\Common\include -I ..\..\Source\include -I .\STM32F10xFWLib\inc -I ..\Source -I ..\Source\FAT-I.\RTE\_Target_1-IC:\Users\Administrator.ThinPC-PC\AppData\Local\Arm\Packs\Keil\STM32F1xx_DFP\2.3.0\Device\Include-IC:\Keil_v5\ARM\CMSIS\Include-IC:\Users\Administrator.ThinPC-PC\AppData\Local\Arm\Packs\Keil\STM32F1xx_DFP\2.3.0-D__UVISION_VERSION="529" -DSTM32F10X_MD -DRVDS_ARMCM3_LM3S102-o .\obj\queue.o --omf_browse .\obj\queue.crf --depend .\obj\queue.d)
+I (C:\Keil_v5\ARM\ARMCC\include\stdlib.h)(0x5D9AE02A)
+I (C:\Keil_v5\ARM\ARMCC\include\string.h)(0x5D9AE028)
+I (..\..\Source\include\FreeRTOS.h)(0x5E11EA7A)
+I (C:\Keil_v5\ARM\ARMCC\include\stddef.h)(0x5D9AE028)
+I (C:\Keil_v5\ARM\ARMCC\include\stdint.h)(0x5D9AE028)
+I (..\Source\FreeRTOSConfig.h)(0x5E443115)
+I (..\..\Source\include\projdefs.h)(0x5E11EA7A)
+I (..\..\Source\include\portable.h)(0x5E11EA7A)
+I (..\..\Source\include\deprecated_definitions.h)(0x5E11EA7A)
+I (..\..\Source\include\../../Source/portable/RVDS/ARM_CM3/portmacro.h)(0x5E11EA7B)
+I (..\..\Source\include\mpu_wrappers.h)(0x5E11EA7A)
+I (..\..\Source\include\task.h)(0x5E11EA7A)
+I (..\..\Source\include\list.h)(0x5E11EA7A)
+I (..\..\Source\include\queue.h)(0x5E11EA7A)
+F (..\..\Source\portable\RVDS\ARM_CM3\port.c)(0x5E11EA7B)(-c --cpu Cortex-M3 -D__MICROLIB -g -O0 --apcs=interwork -I ..\Common\include -I ..\..\Source\include -I .\STM32F10xFWLib\inc -I ..\Source -I ..\Source\FAT-I.\RTE\_Target_1-IC:\Users\Administrator.ThinPC-PC\AppData\Local\Arm\Packs\Keil\STM32F1xx_DFP\2.3.0\Device\Include-IC:\Keil_v5\ARM\CMSIS\Include-IC:\Users\Administrator.ThinPC-PC\AppData\Local\Arm\Packs\Keil\STM32F1xx_DFP\2.3.0-D__UVISION_VERSION="529" -DSTM32F10X_MD -DRVDS_ARMCM3_LM3S102-o .\obj\port.o --omf_browse .\obj\port.crf --depend .\obj\port.d)
+I (..\..\Source\include\FreeRTOS.h)(0x5E11EA7A)
+I (C:\Keil_v5\ARM\ARMCC\include\stddef.h)(0x5D9AE028)
+I (C:\Keil_v5\ARM\ARMCC\include\stdint.h)(0x5D9AE028)
+I (..\Source\FreeRTOSConfig.h)(0x5E443115)
+I (..\..\Source\include\projdefs.h)(0x5E11EA7A)
+I (..\..\Source\include\portable.h)(0x5E11EA7A)
+I (..\..\Source\include\deprecated_definitions.h)(0x5E11EA7A)
+I (..\..\Source\include\../../Source/portable/RVDS/ARM_CM3/portmacro.h)(0x5E11EA7B)
+I (..\..\Source\include\mpu_wrappers.h)(0x5E11EA7A)
+I (..\..\Source\include\task.h)(0x5E11EA7A)
+I (..\..\Source\include\list.h)(0x5E11EA7A)
+F (..\..\Source\portable\MemMang\heap_2.c)(0x5E11EA7B)(-c --cpu Cortex-M3 -D__MICROLIB -g -O0 --apcs=interwork -I ..\Common\include -I ..\..\Source\include -I .\STM32F10xFWLib\inc -I ..\Source -I ..\Source\FAT-I.\RTE\_Target_1-IC:\Users\Administrator.ThinPC-PC\AppData\Local\Arm\Packs\Keil\STM32F1xx_DFP\2.3.0\Device\Include-IC:\Keil_v5\ARM\CMSIS\Include-IC:\Users\Administrator.ThinPC-PC\AppData\Local\Arm\Packs\Keil\STM32F1xx_DFP\2.3.0-D__UVISION_VERSION="529" -DSTM32F10X_MD -DRVDS_ARMCM3_LM3S102-o .\obj\heap_2.o --omf_browse .\obj\heap_2.crf --depend .\obj\heap_2.d)
+I (C:\Keil_v5\ARM\ARMCC\include\stdlib.h)(0x5D9AE02A)
+I (..\..\Source\include\FreeRTOS.h)(0x5E11EA7A)
+I (C:\Keil_v5\ARM\ARMCC\include\stddef.h)(0x5D9AE028)
+I (C:\Keil_v5\ARM\ARMCC\include\stdint.h)(0x5D9AE028)
+I (..\Source\FreeRTOSConfig.h)(0x5E443115)
+I (..\..\Source\include\projdefs.h)(0x5E11EA7A)
+I (..\..\Source\include\portable.h)(0x5E11EA7A)
+I (..\..\Source\include\deprecated_definitions.h)(0x5E11EA7A)
+I (..\..\Source\include\../../Source/portable/RVDS/ARM_CM3/portmacro.h)(0x5E11EA7B)
+I (..\..\Source\include\mpu_wrappers.h)(0x5E11EA7A)
+I (..\..\Source\include\task.h)(0x5E11EA7A)
+I (..\..\Source\include\list.h)(0x5E11EA7A)

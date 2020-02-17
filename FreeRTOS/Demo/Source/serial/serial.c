@@ -146,6 +146,7 @@ xComPortHandle xSerialPortInitMinimal(USART_TypeDef * base,uart_rtos_handle_t *h
 
         USART_Init( handle->base, &USART_InitStructure );
 
+				USART_ITConfig( handle->base, USART_IT_TXE, DISABLE );
         USART_ITConfig( handle->base, USART_IT_RXNE, ENABLE );
 
         if(handle->base == USART1)
@@ -211,19 +212,21 @@ signed char *pxNext;
 
 signed portBASE_TYPE xSerialPutChar(uart_rtos_handle_t *handle,signed char cOutChar, TickType_t xBlockTime )
 {
-signed portBASE_TYPE xReturn;
+//signed portBASE_TYPE xReturn;
+		
+		  USART_SendData(USART2, cOutChar );
+			while (USART_GetFlagStatus(USART2, USART_FLAG_TC) == RESET){}
+//    if( xQueueSend( handle->xCharsForTx, &cOutChar, xBlockTime ) == pdPASS )
+//    {
+//        xReturn = pdPASS;
+//        //USART_ITConfig( handle->base, USART_IT_TXE, ENABLE );
+//    }
+//    else
+//    {
+//        xReturn = pdFAIL;
+//    }
 
-    if( xQueueSend( handle->xCharsForTx, &cOutChar, xBlockTime ) == pdPASS )
-    {
-        xReturn = pdPASS;
-        USART_ITConfig( handle->base, USART_IT_TXE, ENABLE );
-    }
-    else
-    {
-        xReturn = pdFAIL;
-    }
-
-    return xReturn;
+    return pdTRUE;
 }
 /*-----------------------------------------------------------*/
 

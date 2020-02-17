@@ -119,7 +119,7 @@ int8_t SendATcommand(char *ATcommand, char *expected_answer,unsigned int timeout
         cPassMessage[count_char] = '\0';
         xSemaphoreGive( xMutex );
 				
-				return pdTRUE;
+		return pdTRUE;
     }
 		else
 			return pdFALSE;
@@ -313,10 +313,13 @@ TCP_STATUS TCP_Close(void)
  *END**************************************************************************/
 HTTP_STATUS HTTP_Init(char *server)
 {
-    char command[320] ;
+    char command[256] ;
     uint8_t eRet = pdTRUE;
 	
     SendATcommand("AT+HTTPTERM","OK",1000);
+	
+	  Config_GPRS_SIM908();
+		//SendATcommand("AT+SAPBR=3,1,\"Contype\",\"GPRS\"","OK",2000);
     eRet = SendATcommand("AT+HTTPINIT","OK",1000);
     if(eRet == pdTRUE)
     {
@@ -353,7 +356,13 @@ HTTP_STATUS HTTP_Post(char * data, uint32_t timeout)
 {
     char command[50] = {0,};
     HTTP_STATUS httpStatus = HTTP_POST_SUCCESS;
-
+    TickType_t xtime;
+    
+    xtime = xTaskGetTickCount();
+    do
+    {
+    
+    } while (xTaskGetTickCount() - xtime < 100 ) ;
     sprintf(command, "AT+HTTPDATA=%d,%d",strlen(data) + 1,timeout);
     if (pdTRUE == SendATcommand(command, "DOWNLOAD", 2000))
     {
@@ -362,9 +371,13 @@ HTTP_STATUS HTTP_Post(char * data, uint32_t timeout)
             httpStatus = HTTP_POST_FAIL;
         }
         else{
-            SendATcommand("AT+HTTPACTION=1" , "OK" ,2000);
+            SendATcommand("AT+HTTPACTION=1" , "+HTTPACTION" ,2000);
         }
 
+    }
+    else
+    {
+        httpStatus = HTTP_POST_FAIL ;
     }
     
     return httpStatus;
@@ -374,21 +387,32 @@ HTTP_STATUS HTTP_Post(char * data, uint32_t timeout)
 
 HTTP_STATUS HTTP_POST_FromSD(GPS_INFO gpsData, uint32_t sector_num, uint32_t data_size, uint32_t timeout, void (*func)(uint32_t , char *))
 {
-    char command[30] = {0,};
-    char gpsBuff[256];
+	char *command  = pvPortMalloc(30); 
+    char *gpsBuff  = pvPortMalloc(160); 
     uint32_t i;
     HTTP_STATUS httpStatus = HTTP_POST_SUCCESS;
 
-    sprintf(command, "AT+HTTPDATA=%d,%d",data_size,timeout);
+    TickType_t xtime;
+    /* Need to delay before post */
+    xtime = xTaskGetTickCount();
+    do
+    {
+    
+    } while (xTaskGetTickCount() - xtime < 50 ) ;
+
+    sprintf(command, "AT+HTTPDATA=%d,%d",data_size + sector_num - 2 + 4 ,timeout);
     if (pdTRUE == SendATcommand(command, "DOWNLOAD", 2000))
     {
-        for(i = 0; i < sector_num ; i++)
+        for(i = 0; i < sector_num; i++)
         {
             func(i , gpsBuff);
-            printf("%s,",gpsBuff );
+			if((i < sector_num - 1) && (i > 0))
+				printf("%s,",gpsBuff );
+			else
+				printf("%s",gpsBuff );
         }
-
-        if (pdTRUE != SendATcommand("\n]", "OK", 20000))
+		//tmpsize += sector_num -2 ;
+        if (pdTRUE != SendATcommand("\n]}", "OK", 20000))
         {
             httpStatus = HTTP_POST_FAIL;
         }
@@ -399,9 +423,14 @@ HTTP_STATUS HTTP_POST_FromSD(GPS_INFO gpsData, uint32_t sector_num, uint32_t dat
     {
         httpStatus = HTTP_POST_FAIL;
     }    
+		
+	vPortFree(command);
+	vPortFree(gpsBuff);
     return httpStatus;
 }
 
+		
+		
 /*FUNCTION**********************************************************************
  *
  * Function Name : HTTP Read
@@ -412,52 +441,71 @@ HTTP_STATUS HTTP_POST_FromSD(GPS_INFO gpsData, uint32_t sector_num, uint32_t dat
  *
  *END**************************************************************************/
 HTTP_STATUS HTTP_Read(char * datOut)
-
 {
-    signed char SIM_RxChar;
-    char *buffer = pvPortMalloc(160);
-	int cnt = 0;
-    uint32_t error = pdTRUE;
-    HTTP_STATUS httpStatus = HTTP_READ_SUCCESS;
+ //    char SIM_RxChar;
+ //    char *buffer = pvPortMalloc(160);
+	// volatile int cnt = 0;
+ //    uint32_t error = pdTRUE;
+    HTTP_STATUS httpStatus = HTTP_READ_FAIL;
 
-    if (pdTRUE == SendATcommand("AT+HTTPREAD", "+HTTPREAD", 10000))
+    TickType_t xtime;
+    /* Need to delay before post */
+    xtime = xTaskGetTickCount();
+    do
     {
-            do {
-                if (pdTRUE == xSerialGetChar(&uart2_handle, (signed char*)&SIM_RxChar, 0xffff))
-                {
-                    *(buffer + cnt++) = SIM_RxChar;
-                }
-                else
-                { 
-                    httpStatus = HTTP_READ_FAIL;
-                    break;
+    
+    } while (xTaskGetTickCount() - xtime < 100 ) ;
 
-                }
-                if(strstr(buffer , "<h2>404</h2>"))
-                {
-                    httpStatus = HTTP_NOT_FOUND;
-                    break;
-                }
-                else if(strstr(buffer , "<h2>400</h2>"))
-                {
-                    httpStatus = HTTP_PARAM_INVALID;
-                    break;
-                }
-                else if (strstr(buffer , "\r\nOK\r\n"))
-                {
-                    httpStatus = HTTP_READ_SUCCESS;
-                    break;
-                }
-            }while(1) ;
-       }
-
-    vPortFree(buffer);
-
-    if(httpStatus  == HTTP_READ_SUCCESS)
+ //   memset(buffer, 0 , 160);
+    if (pdTRUE == SendATcommand("AT+HTTPREAD", datOut, 10000))
     {
-        strcpy(datOut , buffer);
+        #if 0
+    	do {
+			if (pdTRUE == xSerialGetChar(&uart2_handle, (signed char*)&SIM_RxChar, 5000))
+			{
+				*(buffer + cnt++) = SIM_RxChar;
+			}
+            else
+            {
+                break;
+            }
+            if (strstr(buffer , "OK\r\n"))
+            {
+                httpStatus = HTTP_READ_SUCCESS;
+                break;
+            }
+    	}while(1) ;
+        
+		if(strstr(buffer , "<h2>404</h2>"))
+		{
+			httpStatus = HTTP_NOT_FOUND;
+		}
+		else if(strstr(buffer , "<h2>400</h2>"))
+		{
+			httpStatus = HTTP_PARAM_INVALID;
+		}
+		else if (strstr(buffer , "\r\nOK\r\n"))
+		{
+			httpStatus = HTTP_READ_SUCCESS;
+		}
+
+        if(httpStatus  == HTTP_READ_SUCCESS)
+        {
+            //strcpy(datOut , buffer);
+        }
+        else
+        {
+        	//strcpy(datOut , "ERROR");
+        }
+        #endif
+
+
     }
 
+    httpStatus = HTTP_READ_SUCCESS;
+    //strcpy(datOut , buffer);
+
+    //vPortFree(buffer);
     return httpStatus;
 
 
@@ -517,7 +565,7 @@ void Sim908_setup(void)
     {
         while(1);
     }
-    Sim908_power_on(); // Power up Sim908 module
+    //Sim908_power_on(); // Power up Sim908 module
     //GetIMEI(imei);
     //GetAccount();
     /*****Config Sim908 Module *****************************/

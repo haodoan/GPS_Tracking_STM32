@@ -358,10 +358,10 @@ static uint8_t SD_WaitBytesRead( void )
 		b = SD_ReadByte();
 	} while ( b == 0xFF && i-- > 0 );
 
-	if ( b != 0xFF )
-		printf( " [[ READ delay %d ]] ", SD_NUM_TRIES_READ - i );
-	else
-		printf( " [[ READ delay was not enough ]] " );
+//	if ( b != 0xFF )  jindo
+//		printf( " [[ READ delay %d ]] ", SD_NUM_TRIES_READ - i );
+//	else
+//		printf( " [[ READ delay was not enough ]] " );
 
 	return b;
 }
@@ -378,11 +378,11 @@ static SD_Error SD_WaitBytesWritten( void )
 	{
 		if ( SD_ReadByte() == 0xFF )
 		{
-			printf( " [[ WRITE delay %lu ]] ", SD_NUM_TRIES_WRITE - i );
+		//	printf( " [[ WRITE delay %lu ]] ", SD_NUM_TRIES_WRITE - i );
 			return SD_RESPONSE_NO_ERROR;
 		}
 	}
-	printf( " [[ WRITE delay was not enough ]] " );
+	//printf( " [[ WRITE delay was not enough ]] " );
 	return SD_RESPONSE_FAILURE;
 }
 
@@ -398,11 +398,11 @@ static SD_Error SD_WaitBytesErased( void )
 	{
 		if ( SD_ReadByte() == 0xFF )
 		{
-			printf( " [[ ERASE delay %lu ]] ", SD_NUM_TRIES_ERASE - i );
+	//		printf( " [[ ERASE delay %lu ]] ", SD_NUM_TRIES_ERASE - i );
 			return SD_RESPONSE_NO_ERROR;
 		}
 	}
-	printf( " [[ ERASE delay was not enough ]] " );
+	//printf( " [[ ERASE delay was not enough ]] " );
 	return SD_RESPONSE_FAILURE;
 }
 
@@ -530,15 +530,15 @@ static SD_Error SD_GoIdleState( void )
 	state = SD_WaitReady();	/* make sure card is ready before we go further... */
 
 	/* print out detected SD card type... */
-	switch ( cardType )
-	{
-	case SD_Card_SDSC_v1:	printf( "SDSC v1 (byte address)" ); break;
-	case SD_Card_SDSC_v2:	printf( "SDSC v2 (byte address)" ); break;
-	case SD_Card_SDHC:		printf( "SDHC (512-bytes sector address)" ); break;
-	case SD_Card_MMC:		printf( "MMC (byte address)" ); break;
-	default:				printf( "UNKNOWN" ); break;
-	}
-	printf( " card initialized successfully\n" );
+//	switch ( cardType )
+//	{
+//	case SD_Card_SDSC_v1:	printf( "SDSC v1 (byte address)" ); break;
+//	case SD_Card_SDSC_v2:	printf( "SDSC v2 (byte address)" ); break;
+//	case SD_Card_SDHC:		printf( "SDHC (512-bytes sector address)" ); break;
+//	case SD_Card_MMC:		printf( "MMC (byte address)" ); break;
+//	default:				printf( "UNKNOWN" ); break;
+//	}
+	//printf( " card initialized successfully\n" );
 
 	return SD_RESPONSE_NO_ERROR;
 }
@@ -723,7 +723,7 @@ static SD_Error SD_GetSCRRegister( SD_SCR* SD_scr )
 
 	if ( cardType == SD_Card_MMC )
 	{
-		printf( "SCR Register is not available for MMC cards\n" );
+		//printf( "SCR Register is not available for MMC cards\n" );
 		return SD_ILLEGAL_COMMAND;
 	}
 
@@ -856,7 +856,7 @@ SD_Error SD_SectorRead( uint32_t readAddr, uint8_t* pBuffer )
 {
 	SD_Error state;
 
-	printf( "--> reading sector %lu ...", readAddr );
+	//printf( "--> reading sector %lu ...", readAddr );
 
 	/* non High Capacity cards use byte-oriented addresses */
 	if ( cardType != SD_Card_SDHC )
@@ -874,10 +874,10 @@ SD_Error SD_SectorRead( uint32_t readAddr, uint8_t* pBuffer )
 
 	SD_Bus_Release();	/* release SPI bus... */
 
-	if ( state == SD_RESPONSE_NO_ERROR )
-		printf( "OK\n" );
-	else
-		printf( "KO(%d)\n", state );
+//	if ( state == SD_RESPONSE_NO_ERROR )
+//		printf( "OK\n" );
+//	else
+//		printf( "KO(%d)\n", state );
 
 	return state;
 }
@@ -895,7 +895,7 @@ SD_Error SD_SectorsRead( uint32_t readAddr, uint8_t* pBuffer, uint32_t nbSectors
 {
 	SD_Error state;
 
-	printf( "--> reading %lu sectors from %lu ...", nbSectors, readAddr );
+	//printf( "--> reading %lu sectors from %lu ...", nbSectors, readAddr );
 
 	/* non High Capacity cards use byte-oriented addresses */
 	if ( cardType != SD_Card_SDHC )
@@ -923,10 +923,10 @@ SD_Error SD_SectorsRead( uint32_t readAddr, uint8_t* pBuffer, uint32_t nbSectors
 
 	SD_Bus_Release();	/* release SPI bus... */
 
-	if ( state == SD_RESPONSE_NO_ERROR )
-		printf( "OK\n" );
-	else
-		printf( "KO(%d)\n", state );
+//	if ( state == SD_RESPONSE_NO_ERROR )
+//		printf( "OK\n" );
+//	else
+//		printf( "KO(%d)\n", state );
 
 	return state;
 }
@@ -945,7 +945,7 @@ SD_Error SD_SectorWrite( uint32_t writeAddr, const uint8_t* pBuffer )
 	SD_DataResponse res;
 	uint16_t BlockSize = SD_BLOCK_SIZE;
 
-	printf( "--> writing sector %lu ...", writeAddr );
+	//printf( "--> writing sector %lu ...", writeAddr );
 
 	/* non High Capacity cards use byte-oriented addresses */
 	if ( cardType != SD_Card_SDHC )
@@ -982,10 +982,10 @@ SD_Error SD_SectorWrite( uint32_t writeAddr, const uint8_t* pBuffer )
 
 	SD_Bus_Release();	/* release SPI bus... */
 
-	if ( state == SD_RESPONSE_NO_ERROR )
-		printf( "OK\n" );
-	else
-		printf( "KO(%d)\n", state );
+//	if ( state == SD_RESPONSE_NO_ERROR )
+//		printf( "OK\n" );
+//	else
+//		printf( "KO(%d)\n", state );
 
 	return state;
 }
@@ -1001,11 +1001,12 @@ SD_Error SD_SectorWrite( uint32_t writeAddr, const uint8_t* pBuffer )
  */
 SD_Error SD_SectorsWrite( uint32_t writeAddr, const uint8_t* pBuffer, uint32_t nbSectors )
 {
+	
 	SD_Error state;
 	SD_DataResponse res;
 	uint16_t BlockSize = SD_BLOCK_SIZE;
 
-	printf( "--> writing %lu sectors at %lu ...", nbSectors, writeAddr );
+	//printf( "--> writing %lu sectors at %lu ...", nbSectors, writeAddr );
 
 	/* non High Capacity cards use byte-oriented addresses */
 	if ( cardType != SD_Card_SDHC )
@@ -1064,10 +1065,10 @@ SD_Error SD_SectorsWrite( uint32_t writeAddr, const uint8_t* pBuffer, uint32_t n
 
 	SD_Bus_Release();	/* release SPI bus... */
 
-	if ( state == SD_RESPONSE_NO_ERROR )
-		printf( "OK\n" );
-	else
-		printf( "KO(%d)\n", state );
+//	if ( state == SD_RESPONSE_NO_ERROR )
+//		printf( "OK\n" );
+//	else
+//		printf( "KO(%d)\n", state );
 
 	return state;
 }
@@ -1086,11 +1087,11 @@ SD_Error SD_SectorsErase( uint32_t eraseAddrFrom, uint32_t eraseAddrTo )
 
 	if ( cardType == SD_Card_MMC )
 	{
-		printf( "--> erasing sectors is not supported for MMC cards\n" );
+		//printf( "--> erasing sectors is not supported for MMC cards\n" );
 		return SD_ILLEGAL_COMMAND;
 	}
 
-	printf( "--> erasing sectors from %lu to %lu ...", eraseAddrFrom, eraseAddrTo );
+	//printf( "--> erasing sectors from %lu to %lu ...", eraseAddrFrom, eraseAddrTo );
 
 	/* non High Capacity cards use byte-oriented addresses */
 	if ( cardType != SD_Card_SDHC )
@@ -1120,10 +1121,10 @@ SD_Error SD_SectorsErase( uint32_t eraseAddrFrom, uint32_t eraseAddrTo )
 
 	SD_Bus_Release();	/* release SPI bus... */
 
-	if ( state == SD_RESPONSE_NO_ERROR )
-		printf( "OK\n" );
-	else
-		printf( "KO(%d)\n", state );
+//	if ( state == SD_RESPONSE_NO_ERROR )
+//		printf( "OK\n" );
+//	else
+//		printf( "KO(%d)\n", state );
 
 	return state;
 }
@@ -1142,7 +1143,7 @@ SD_Error SD_GetStatus( SD_Status* SD_status )
 
 	if ( cardType == SD_Card_MMC )
 	{
-		printf( "SD card status is not available for MMC cards\n" );
+		//printf( "SD card status is not available for MMC cards\n" );
 		return SD_ILLEGAL_COMMAND;
 	}
 
@@ -1239,7 +1240,7 @@ SD_Error SD_GetCardInfo( SD_CardInfo *cardinfo )
 void SD_DumpCardInfo( const SD_CardInfo *cardinfo )
 {
 	uint8_t is_OSRv1 = ( cardinfo->SD_csd.CSDStruct == 0 );
-	printf( "\nDumping SD Card information:\n\n    GLOBAL INFO\nSD Card type : " );
+	//printf( "\nDumping SD Card information:\n\n    GLOBAL INFO\nSD Card type : " );
 	/* some cards report wrong CSDStruct field in CSR register => use detected card type instead... */
 	if ( is_OSRv1 != 0 )
 		printf( "SDSC (v1 or v2)\n" );

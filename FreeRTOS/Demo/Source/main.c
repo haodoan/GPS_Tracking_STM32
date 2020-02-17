@@ -203,49 +203,49 @@ static uint8_t buff1[ 512 ];
 
 static void SDCard_Run( void )
 {
-	UINT nb;
-	FRESULT rs;
+    UINT nb;
+    FRESULT rs;
 
-	if ( SD_Detect() == SD_NOT_PRESENT )
-	{
-		printf( "SDCard isn't detected\n" );
-		return;
-	}
+    if ( SD_Detect() == SD_NOT_PRESENT )
+    {
+        printf( "SDCard isn't detected\n" );
+        return;
+    }
 
-	printf( "f_mount() ... " );
-	rs = f_mount( 0, &fs );
-	if ( rs != FR_OK )
-	{
-		printf( "failed with code %d\n", rs );
-		return;
-	}
-	printf( "OK\n" );
+    printf( "f_mount() ... " );
+    rs = f_mount( 0, &fs );
+    if ( rs != FR_OK )
+    {
+        printf( "failed with code %d\n", rs );
+        return;
+    }
+    printf( "OK\n" );
 
-	printf( "f_open() ... " );
-	rs = f_open( &f, "test.txt", FA_OPEN_ALWAYS | FA_READ | FA_WRITE );
-	if ( rs != FR_OK )
-	{
-		printf( "failed with code %d\n", rs );
-		return;
-	}
-	printf( "OK\n" );
-	printf( "f_write() ... " );
-	rs = f_write( &f, filecontext, sizeof(filecontext), &nb );
-	if ( rs != FR_OK || nb != sizeof(filecontext) )
-	{
-		printf( "failed with code %d\n", rs );
-		return;
-	}
-	printf( "OK\n" );
+    printf( "f_open() ... " );
+    rs = f_open( &f, "test.txt", FA_OPEN_ALWAYS | FA_READ | FA_WRITE );
+    if ( rs != FR_OK )
+    {
+        printf( "failed with code %d\n", rs );
+        return;
+    }
+    printf( "OK\n" );
+    printf( "f_write() ... " );
+    rs = f_write( &f, filecontext, sizeof(filecontext), &nb );
+    if ( rs != FR_OK || nb != sizeof(filecontext) )
+    {
+        printf( "failed with code %d\n", rs );
+        return;
+    }
+    printf( "OK\n" );
 
-	printf( "f_close() ... " );
-	rs = f_close( &f );
-	if ( rs != FR_OK )
-	{
-		printf( "failed with code %d\n", rs );
-		return;
-	}
-	printf( " OK\n" );
+    printf( "f_close() ... " );
+    rs = f_close( &f );
+    if ( rs != FR_OK )
+    {
+        printf( "failed with code %d\n", rs );
+        return;
+    }
+    printf( " OK\n" );
 }
 
 
@@ -256,16 +256,16 @@ int main(void)
 #endif
 
     prvSetupHardware();
-	
+    
     /* Start the standard demo tasks. */
-    //	vStartBlockingQueueTasks( mainBLOCK_Q_PRIORITY );
-    //	vCreateBlockTimeTasks();
-    //	vStartSemaphoreTasks( mainSEM_TEST_PRIORITY );
-    //	vStartPolledQueueTasks( mainQUEUE_POLL_PRIORITY );
-    //	vStartIntegerMathTasks( mainINTEGER_TASK_PRIORITY );
-    //	vStartLEDFlashTasks( mainFLASH_TASK_PRIORITY );
-    //	vAltStartComTestTasks( mainCOM_TEST_PRIORITY, mainCOM_TEST_BAUD_RATE, mainCOM_TEST_LED );
-	
+    //  vStartBlockingQueueTasks( mainBLOCK_Q_PRIORITY );
+    //  vCreateBlockTimeTasks();
+    //  vStartSemaphoreTasks( mainSEM_TEST_PRIORITY );
+    //  vStartPolledQueueTasks( mainQUEUE_POLL_PRIORITY );
+    //  vStartIntegerMathTasks( mainINTEGER_TASK_PRIORITY );
+    //  vStartLEDFlashTasks( mainFLASH_TASK_PRIORITY );
+    //  vAltStartComTestTasks( mainCOM_TEST_PRIORITY, mainCOM_TEST_BAUD_RATE, mainCOM_TEST_LED );
+    
     
     SIM908_queue = xQueueCreate(20, sizeof(GPS_INFO));
     if (SIM908_queue == NULL)
@@ -344,8 +344,8 @@ static void vGPRSTask(void *pvParameters)
     HTTP_STATUS vHTTP_status;
     char gprs_buffer[GPRS_BUFFER_SIZE] ;
     uint16_t lcd_cnt = 0;
-		char  datOut[256] = {0,};
-    uint32_t sector = 0 ;
+    char  datOut[256] = {0,};
+    uint32_t sector = 1 ;
     uint32_t size = 0;
     uint32_t latestOnlineStatus = pdTRUE;
     // Set up sim908
@@ -355,11 +355,25 @@ static void vGPRSTask(void *pvParameters)
 
     HTTP_Init(SERVER);
 
+    // while(1)
+    // {
+    //     if (HTTP_POST_SUCCESS == HTTP_Post("gprs_buffer" , 10000))
+    //     {                                  
+    //         //memset(datOut, '\0', 256);
+    //         //delay_ms(3000);
+    //         if(HTTP_READ_SUCCESS != HTTP_Read(RESPONSE_DATA))
+    //         {
+    //             HTTP_Init(SERVER);
+    //         }
+    //     }
+    //     //delay_ms(1000);
+    // }
+
     STM_EVAL_SPI_Init();
     SD_Init();   
 
     xTaskCreate(vGPSTask, "GPS", mainGPS_TASK_STACK_SIZE, NULL, mainGPS_TASK_PRIORITY, NULL);
-	
+    
     for (;;)
     {
         if (xQueueReceive(SIM908_queue, &vGPSinfo, GPRS_BLOCK_TIME)) // Receive data from GPS task
@@ -377,17 +391,22 @@ static void vGPRSTask(void *pvParameters)
                  //   memset(gprs_buffer, '\0', sizeof(gprs_buffer) / sizeof(char));
                     jsonDataPost(vGPSinfo,gprs_buffer);
                     if (HTTP_POST_SUCCESS == HTTP_Post(gprs_buffer , 10000))
-                    {											
-											   memset(datOut, '\0', sizeof(datOut) / sizeof(char));
-                        if(HTTP_READ_SUCCESS == HTTP_Read(datOut))
+                    {                                  
+                        //memset(datOut, '\0', 256);
+                        if(HTTP_READ_SUCCESS == HTTP_Read(RESPONSE_DATA))
                         {
-                            if(!strstr(datOut,RESPONSE_DATA))
+                            vGPSinfo.ONLINE = pdFALSE ;
+                            latestOnlineStatus = pdFALSE;
+                            size += WriteGPSDataInfo(sector, vGPSinfo);
+                            sector++ ;
+                            HTTP_Init(SERVER);                            
+                         /*   if(!strstr(datOut,RESPONSE_DATA))
                             {
                                 vGPSinfo.ONLINE = pdFALSE ;
-
                                 latestOnlineStatus = pdFALSE;
                                 size += WriteGPSDataInfo(sector, vGPSinfo);
                                 sector++ ;
+                                HTTP_Init(SERVER);
 
                             }
                             else
@@ -395,16 +414,30 @@ static void vGPRSTask(void *pvParameters)
                                 vGPSinfo.ONLINE = pdTRUE ;
                                 if(latestOnlineStatus == pdFALSE)
                                 {
-                                    WriteJsonHeadertoSDcard(vGPSinfo);
-                                    HTTP_POST_FromSD(vGPSinfo, sector, size*sector , 20000, ReadGPSInfo) ;
-                                    sector = 0;       
+                                    size += WriteJsonHeadertoSDcard(vGPSinfo);
+                                    HTTP_POST_FromSD(vGPSinfo, sector, size , 20000, ReadGPSInfo) ;
+                                    sector = 1; // sector start for write data  
                                     size = 0;                             
                                 }
 
                                 latestOnlineStatus = pdTRUE;
+                            }*/
+                        }
+                        else
+                        {
+                            vGPSinfo.ONLINE = pdTRUE ;
+                            if(latestOnlineStatus == pdFALSE)
+                            {
+                                size += WriteJsonHeadertoSDcard(vGPSinfo);
+                                HTTP_POST_FromSD(vGPSinfo, sector, size , 20000, ReadGPSInfo) ;
+                                sector = 1; // sector start for write data  
+                                size = 0;                             
                             }
+
+                            latestOnlineStatus = pdTRUE;
                         }
                     }
+                          
                     xSemaphoreGive( SIM908_Mutex );
                 }
             
@@ -434,14 +467,14 @@ static void vSaveLocationTask(void *pvParameters)
 static uint32_t WriteJsonHeadertoSDcard(GPS_INFO gpsInfo)
 {
     char buff[256] ;
-		uint32_t size;
+        uint32_t size;
 
     sprintf(buff,"{\
-            \"id\":%s\", \
-            \"online\":false\",\
-            \"gps\":true\",\
-            \"position\":[\n\"",\
-            gpsInfo.IMEI);    
+\"id\":%s\", \
+\"online\":false\",\
+\"gps\":true\",\
+\"position\":[\n",\
+gpsInfo.IMEI);    
 
     SD_SectorWrite(0, (uint8_t *)buff);
     size = strlen(buff);
@@ -456,7 +489,7 @@ static uint32_t WriteGPSDataInfo(uint32_t sector, GPS_INFO gpsInfo)
     uint32_t size;
 
     sprintf((char*)buff, "{\"date\":\"%s\",\"lat\":\"%s\",\"lng\":\"%s\",\"speed\":\"%d\"}", gpsInfo.date,gpsInfo.latitude \
-			                                                                              , gpsInfo.longtitude,10) ;
+                                                                                          , gpsInfo.longtitude,10) ;
     SD_SectorWrite(sector, buff);
     size = strlen((char*)buff);
 

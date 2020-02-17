@@ -1,0 +1,15 @@
+.\obj\blockq.o: ..\Common\Minimal\BlockQ.c
+.\obj\blockq.o: C:\Keil_v5\ARM\ARMCC\Bin\..\include\stdlib.h
+.\obj\blockq.o: ..\..\Source\include\FreeRTOS.h
+.\obj\blockq.o: C:\Keil_v5\ARM\ARMCC\Bin\..\include\stddef.h
+.\obj\blockq.o: C:\Keil_v5\ARM\ARMCC\Bin\..\include\stdint.h
+.\obj\blockq.o: ..\Source\FreeRTOSConfig.h
+.\obj\blockq.o: ..\..\Source\include\projdefs.h
+.\obj\blockq.o: ..\..\Source\include\portable.h
+.\obj\blockq.o: ..\..\Source\include\deprecated_definitions.h
+.\obj\blockq.o: ..\..\Source\include\../../Source/portable/RVDS/ARM_CM3/portmacro.h
+.\obj\blockq.o: ..\..\Source\include\mpu_wrappers.h
+.\obj\blockq.o: ..\..\Source\include\task.h
+.\obj\blockq.o: ..\..\Source\include\list.h
+.\obj\blockq.o: ..\..\Source\include\queue.h
+.\obj\blockq.o: ..\Common\include\BlockQ.h
