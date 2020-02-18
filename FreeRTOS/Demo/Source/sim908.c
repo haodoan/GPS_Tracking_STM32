@@ -454,7 +454,7 @@ HTTP_STATUS HTTP_Read(char * datOut)
     do
     {
     
-    } while (xTaskGetTickCount() - xtime < 100 ) ;
+    } while (xTaskGetTickCount() - xtime < 1000 ) ;
 
  //   memset(buffer, 0 , 160);
     if (pdTRUE == SendATcommand("AT+HTTPREAD", datOut, 10000))
@@ -498,11 +498,11 @@ HTTP_STATUS HTTP_Read(char * datOut)
         	//strcpy(datOut , "ERROR");
         }
         #endif
-
+        
+        httpStatus = HTTP_READ_SUCCESS;
 
     }
 
-    httpStatus = HTTP_READ_SUCCESS;
     //strcpy(datOut , buffer);
 
     //vPortFree(buffer);
@@ -565,7 +565,7 @@ void Sim908_setup(void)
     {
         while(1);
     }
-    //Sim908_power_on(); // Power up Sim908 module
+ //   Sim908_power_on(); // Power up Sim908 module
     //GetIMEI(imei);
     //GetAccount();
     /*****Config Sim908 Module *****************************/
@@ -685,7 +685,7 @@ sprintf(jsonString , \
          "{\
 \"id\":%s,\
 \"lat\":%s,\
-\"lon\":%s,\
+\"lng\":%s,\
 \"speed\":%d,\
 \"fuel\":%d,\
 \"bearing\":%d\

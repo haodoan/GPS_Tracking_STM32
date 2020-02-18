@@ -388,14 +388,14 @@
               <FilePath>.\STM32F10x.s</FilePath>
             </File>
             <File>
-              <FileName>cortexm3_macro_rvds.s</FileName>
-              <FileType>2</FileType>
-              <FilePath>..\Common\drivers\ST\STM32F10xFWLib\src\cortexm3_macro_rvds.s</FilePath>
-            </File>
-            <File>
               <FileName>stm32f10x_usart.c</FileName>
               <FileType>1</FileType>
               <FilePath>.\STM32F10xFWLib\src\stm32f10x_usart.c</FilePath>
+            </File>
+            <File>
+              <FileName>cortexm3_macro_rvds.s</FileName>
+              <FileType>2</FileType>
+              <FilePath>..\Common\drivers\ST\STM32F10xFWLib\src\cortexm3_macro_rvds.s</FilePath>
             </File>
             <File>
               <FileName>stm32f10x_gpio.c</FileName>

@@ -1,7 +1,7 @@
 --cpu Cortex-M3
 ".\obj\stm32f10x.o"
-".\obj\cortexm3_macro_rvds.o"
 ".\obj\stm32f10x_usart.o"
+".\obj\cortexm3_macro_rvds.o"
 ".\obj\stm32f10x_gpio.o"
 ".\obj\stm32f10x_lib.o"
 ".\obj\stm32f10x_nvic.o"

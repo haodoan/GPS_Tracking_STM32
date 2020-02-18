@@ -335,8 +335,8 @@ static void vGPSTask(void *pvParameters)
     }
 }
 /*GPRS task*/
-#define SERVER "http://ptsv2.com/t/Hao/post"
-///#define SERVER "http://store.redboxsa.com/update-location"
+//#define SERVER "http://ptsv2.com/t/Hao/post"
+#define SERVER "http://store.redboxsa.com/update-location"
 #define RESPONSE_DATA "status:true"
 static void vGPRSTask(void *pvParameters)
 {
@@ -388,12 +388,12 @@ static void vGPRSTask(void *pvParameters)
             {
                 if( xSemaphoreTake( SIM908_Mutex, ( TickType_t ) portMAX_DELAY ) == pdTRUE )
                 {
-                 //   memset(gprs_buffer, '\0', sizeof(gprs_buffer) / sizeof(char));
+                 //   memset(gpros_buffer, '\0', sizeof(gprs_buffer) / sizeof(char));
                     jsonDataPost(vGPSinfo,gprs_buffer);
                     if (HTTP_POST_SUCCESS == HTTP_Post(gprs_buffer , 10000))
                     {                                  
                         //memset(datOut, '\0', 256);
-                        if(HTTP_READ_SUCCESS == HTTP_Read(RESPONSE_DATA))
+                        if(HTTP_READ_SUCCESS != HTTP_Read(RESPONSE_DATA))
                         {
                             vGPSinfo.ONLINE = pdFALSE ;
                             latestOnlineStatus = pdFALSE;
