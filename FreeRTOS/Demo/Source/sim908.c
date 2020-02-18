@@ -363,6 +363,7 @@ HTTP_STATUS HTTP_Post(char * data, uint32_t timeout)
     {
     
     } while (xTaskGetTickCount() - xtime < 100 ) ;
+
     sprintf(command, "AT+HTTPDATA=%d,%d",strlen(data) + 1,timeout);
     if (pdTRUE == SendATcommand(command, "DOWNLOAD", 2000))
     {
@@ -371,7 +372,11 @@ HTTP_STATUS HTTP_Post(char * data, uint32_t timeout)
             httpStatus = HTTP_POST_FAIL;
         }
         else{
-            SendATcommand("AT+HTTPACTION=1" , "+HTTPACTION" ,2000);
+            if(pdTRUE != SendATcommand("AT+HTTPACTION=1" , "+HTTPACTION:1,200" ,5000))
+            {                
+                httpStatus = HTTP_POST_NETWORF_ERROR;       
+            }
+
         }
 
     }
@@ -417,7 +422,7 @@ HTTP_STATUS HTTP_POST_FromSD(GPS_INFO gpsData, uint32_t sector_num, uint32_t dat
             httpStatus = HTTP_POST_FAIL;
         }
 
-        SendATcommand("AT+HTTPACTION=1", "OK", 2000) ;
+        SendATcommand("AT+HTTPACTION=1", "+HTTPACTION:1,200", 5000) ;
     }
     else
     {

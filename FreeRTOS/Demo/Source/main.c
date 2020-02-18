@@ -193,62 +193,6 @@ QueueHandle_t SIM908_queue;
 SemaphoreHandle_t SIM908_Mutex;
 /*-----------------------------------------------------------*/
 
-static const TCHAR filename[ 12 + 1 ] = { 'T', 'E', 'S', 'T', '_', 'S', 'D', 'C', '.', 'T', 'X', 'T', '\0' };
-static const TCHAR filecontext[ 15 ] = { 'U', 'C', 'A', 'N', '-', 'S', 'T', 'M', '3', '2', 'F', '2', '1', '7', '\0' };
-static FATFS fs;
-static FIL f;
-
-static uint8_t buff[ 512 ];
-static uint8_t buff1[ 512 ];
-
-static void SDCard_Run( void )
-{
-    UINT nb;
-    FRESULT rs;
-
-    if ( SD_Detect() == SD_NOT_PRESENT )
-    {
-        printf( "SDCard isn't detected\n" );
-        return;
-    }
-
-    printf( "f_mount() ... " );
-    rs = f_mount( 0, &fs );
-    if ( rs != FR_OK )
-    {
-        printf( "failed with code %d\n", rs );
-        return;
-    }
-    printf( "OK\n" );
-
-    printf( "f_open() ... " );
-    rs = f_open( &f, "test.txt", FA_OPEN_ALWAYS | FA_READ | FA_WRITE );
-    if ( rs != FR_OK )
-    {
-        printf( "failed with code %d\n", rs );
-        return;
-    }
-    printf( "OK\n" );
-    printf( "f_write() ... " );
-    rs = f_write( &f, filecontext, sizeof(filecontext), &nb );
-    if ( rs != FR_OK || nb != sizeof(filecontext) )
-    {
-        printf( "failed with code %d\n", rs );
-        return;
-    }
-    printf( "OK\n" );
-
-    printf( "f_close() ... " );
-    rs = f_close( &f );
-    if ( rs != FR_OK )
-    {
-        printf( "failed with code %d\n", rs );
-        return;
-    }
-    printf( " OK\n" );
-}
-
-
 int main(void)
 {
 #ifdef DEBUG
@@ -296,7 +240,6 @@ int main(void)
 /*GPS task*/
 static void vGPSTask(void *pvParameters)
 {
-    static char gps_cnt=0;
     GPS_INFO vGPSinfo;
 
     /*GPS Power ON*/
@@ -336,15 +279,16 @@ static void vGPSTask(void *pvParameters)
 }
 /*GPRS task*/
 //#define SERVER "http://ptsv2.com/t/Hao/post"
-#define SERVER "http://store.redboxsa.com/update-location"
-#define RESPONSE_DATA "status:true"
+//#define SERVER "http://store.redboxsa.com/update-location"
+#define SERVER          "http://ptsv2.com/t/GPSonlineSrv/post"
+#define SERVER_OFFLINE  "http://ptsv2.com/t/GPSofflineSrv/post"
+#define RESPONSE_DATA   "status:true"
+#define MAX_SIZE   318976
 static void vGPRSTask(void *pvParameters)
 {
     GPS_INFO vGPSinfo;
     HTTP_STATUS vHTTP_status;
     char gprs_buffer[GPRS_BUFFER_SIZE] ;
-    uint16_t lcd_cnt = 0;
-    char  datOut[256] = {0,};
     uint32_t sector = 1 ;
     uint32_t size = 0;
     uint32_t latestOnlineStatus = pdTRUE;
@@ -354,20 +298,6 @@ static void vGPRSTask(void *pvParameters)
     Config_GPRS_SIM908();
 
     HTTP_Init(SERVER);
-
-    // while(1)
-    // {
-    //     if (HTTP_POST_SUCCESS == HTTP_Post("gprs_buffer" , 10000))
-    //     {                                  
-    //         //memset(datOut, '\0', 256);
-    //         //delay_ms(3000);
-    //         if(HTTP_READ_SUCCESS != HTTP_Read(RESPONSE_DATA))
-    //         {
-    //             HTTP_Init(SERVER);
-    //         }
-    //     }
-    //     //delay_ms(1000);
-    // }
 
     STM_EVAL_SPI_Init();
     SD_Init();   
@@ -388,54 +318,32 @@ static void vGPRSTask(void *pvParameters)
             {
                 if( xSemaphoreTake( SIM908_Mutex, ( TickType_t ) portMAX_DELAY ) == pdTRUE )
                 {
-                 //   memset(gpros_buffer, '\0', sizeof(gprs_buffer) / sizeof(char));
+                    memset(gprs_buffer, '\0', sizeof(gprs_buffer) / sizeof(char));
                     jsonDataPost(vGPSinfo,gprs_buffer);
                     if (HTTP_POST_SUCCESS == HTTP_Post(gprs_buffer , 10000))
                     {                                  
-                        //memset(datOut, '\0', 256);
-                        if(HTTP_READ_SUCCESS != HTTP_Read(RESPONSE_DATA))
-                        {
-                            vGPSinfo.ONLINE = pdFALSE ;
-                            latestOnlineStatus = pdFALSE;
-                            size += WriteGPSDataInfo(sector, vGPSinfo);
-                            sector++ ;
-                            HTTP_Init(SERVER);                            
-                         /*   if(!strstr(datOut,RESPONSE_DATA))
-                            {
-                                vGPSinfo.ONLINE = pdFALSE ;
-                                latestOnlineStatus = pdFALSE;
-                                size += WriteGPSDataInfo(sector, vGPSinfo);
-                                sector++ ;
-                                HTTP_Init(SERVER);
-
-                            }
-                            else
-                            {                                
-                                vGPSinfo.ONLINE = pdTRUE ;
-                                if(latestOnlineStatus == pdFALSE)
-                                {
-                                    size += WriteJsonHeadertoSDcard(vGPSinfo);
-                                    HTTP_POST_FromSD(vGPSinfo, sector, size , 20000, ReadGPSInfo) ;
-                                    sector = 1; // sector start for write data  
-                                    size = 0;                             
-                                }
-
-                                latestOnlineStatus = pdTRUE;
-                            }*/
-                        }
-                        else
+                        if(HTTP_READ_SUCCESS == HTTP_Read(RESPONSE_DATA))
                         {
                             vGPSinfo.ONLINE = pdTRUE ;
                             if(latestOnlineStatus == pdFALSE)
                             {
+                                HTTP_Init(SERVER_OFFLINE);
                                 size += WriteJsonHeadertoSDcard(vGPSinfo);
                                 HTTP_POST_FromSD(vGPSinfo, sector, size , 20000, ReadGPSInfo) ;
+                                HTTP_Init(SERVER);
                                 sector = 1; // sector start for write data  
                                 size = 0;                             
                             }
-
-                            latestOnlineStatus = pdTRUE;
+                            latestOnlineStatus = pdTRUE;                     
                         }
+                    }
+                    else
+                    {
+                        vGPSinfo.ONLINE = pdFALSE ;
+                        latestOnlineStatus = pdFALSE;
+                        size += WriteGPSDataInfo(sector, vGPSinfo);
+                        sector++ ;
+                        HTTP_Init(SERVER);        
                     }
                           
                     xSemaphoreGive( SIM908_Mutex );
