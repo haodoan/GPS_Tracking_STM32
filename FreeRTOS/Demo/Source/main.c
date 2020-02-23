@@ -329,7 +329,8 @@ static void vGPRSTask(void *pvParameters)
                             {
                                 HTTP_Init(SERVER_OFFLINE);
                                 size += WriteJsonHeadertoSDcard(vGPSinfo);
-                                HTTP_POST_FromSD(vGPSinfo, sector, size , 20000, ReadGPSInfo) ;
+                                //HTTP_POST_FromSD(vGPSinfo, sector, size , 20000, ReadGPSInfo) ;
+                                HTTP_POST_BIGSIZE_FromSD(vGPSinfo, sector, size , 20000, ReadGPSInfo) ;
                                 HTTP_Init(SERVER);
                                 sector = 1; // sector start for write data  
                                 size = 0;                             

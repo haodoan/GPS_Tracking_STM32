@@ -152,6 +152,22 @@
         <Bp>
           <Number>0</Number>
           <Type>0</Type>
+          <LineNumber>333</LineNumber>
+          <EnabledFlag>1</EnabledFlag>
+          <Address>134225010</Address>
+          <ByteObject>0</ByteObject>
+          <HtxType>0</HtxType>
+          <ManyObjects>0</ManyObjects>
+          <SizeOfObject>0</SizeOfObject>
+          <BreakByAccess>0</BreakByAccess>
+          <BreakIfRCount>1</BreakIfRCount>
+          <Filename>..\Source\main.c</Filename>
+          <ExecCommand></ExecCommand>
+          <Expression>\\RTOSDemo\../Source/main.c\333</Expression>
+        </Bp>
+        <Bp>
+          <Number>1</Number>
+          <Type>0</Type>
           <LineNumber>323</LineNumber>
           <EnabledFlag>1</EnabledFlag>
           <Address>134224952</Address>
@@ -166,7 +182,23 @@
           <Expression>\\RTOSDemo\../Source/main.c\323</Expression>
         </Bp>
         <Bp>
-          <Number>1</Number>
+          <Number>2</Number>
+          <Type>0</Type>
+          <LineNumber>456</LineNumber>
+          <EnabledFlag>1</EnabledFlag>
+          <Address>134227572</Address>
+          <ByteObject>0</ByteObject>
+          <HtxType>0</HtxType>
+          <ManyObjects>0</ManyObjects>
+          <SizeOfObject>0</SizeOfObject>
+          <BreakByAccess>0</BreakByAccess>
+          <BreakIfRCount>1</BreakIfRCount>
+          <Filename>..\Source\sim908.c</Filename>
+          <ExecCommand></ExecCommand>
+          <Expression>\\RTOSDemo\../Source/sim908.c\456</Expression>
+        </Bp>
+        <Bp>
+          <Number>3</Number>
           <Type>0</Type>
           <LineNumber>44</LineNumber>
           <EnabledFlag>1</EnabledFlag>
@@ -182,7 +214,7 @@
           <Expression></Expression>
         </Bp>
         <Bp>
-          <Number>2</Number>
+          <Number>4</Number>
           <Type>0</Type>
           <LineNumber>105</LineNumber>
           <EnabledFlag>1</EnabledFlag>
@@ -198,7 +230,7 @@
           <Expression></Expression>
         </Bp>
         <Bp>
-          <Number>3</Number>
+          <Number>5</Number>
           <Type>0</Type>
           <LineNumber>201</LineNumber>
           <EnabledFlag>1</EnabledFlag>
@@ -214,9 +246,9 @@
           <Expression></Expression>
         </Bp>
         <Bp>
-          <Number>4</Number>
+          <Number>6</Number>
           <Type>0</Type>
-          <LineNumber>257</LineNumber>
+          <LineNumber>216</LineNumber>
           <EnabledFlag>1</EnabledFlag>
           <Address>0</Address>
           <ByteObject>0</ByteObject>
@@ -230,9 +262,9 @@
           <Expression></Expression>
         </Bp>
         <Bp>
-          <Number>5</Number>
+          <Number>7</Number>
           <Type>0</Type>
-          <LineNumber>216</LineNumber>
+          <LineNumber>257</LineNumber>
           <EnabledFlag>1</EnabledFlag>
           <Address>0</Address>
           <ByteObject>0</ByteObject>
@@ -241,7 +273,7 @@
           <SizeOfObject>0</SizeOfObject>
           <BreakByAccess>0</BreakByAccess>
           <BreakIfRCount>0</BreakIfRCount>
-          <Filename>..\Source\main.c</Filename>
+          <Filename>.\STM32F10x.s</Filename>
           <ExecCommand></ExecCommand>
           <Expression></Expression>
         </Bp>
@@ -286,6 +318,21 @@
           <count>7</count>
           <WinNumber>1</WinNumber>
           <ItemText>gprs_buffer</ItemText>
+        </Ww>
+        <Ww>
+          <count>8</count>
+          <WinNumber>1</WinNumber>
+          <ItemText>vGPSinfo</ItemText>
+        </Ww>
+        <Ww>
+          <count>9</count>
+          <WinNumber>1</WinNumber>
+          <ItemText>latestOnlineStatus</ItemText>
+        </Ww>
+        <Ww>
+          <count>10</count>
+          <WinNumber>1</WinNumber>
+          <ItemText>size</ItemText>
         </Ww>
       </WatchWindow1>
       <MemoryWindow1>

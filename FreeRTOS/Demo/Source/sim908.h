@@ -70,6 +70,8 @@ HTTP_STATUS HTTP_Post(char * data, uint32_t timeout);
 HTTP_STATUS HTTP_Release();
 HTTP_STATUS HTTP_Read(char * datOut);
 HTTP_STATUS HTTP_POST_FromSD(GPS_INFO gpsData, uint32_t sector_num, uint32_t data_size, uint32_t timeout, void (*func)(uint32_t , char *));
+HTTP_STATUS HTTP_POST_BIGSIZE_FromSD(GPS_INFO gpsData, uint32_t sector_num, uint32_t data_size, uint32_t timeout, void (*func)(uint32_t , char *));
+
 
 void Sim908_setup(void);
 void Sim908_power_on(void);
