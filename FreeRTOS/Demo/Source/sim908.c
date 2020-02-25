@@ -372,7 +372,7 @@ HTTP_STATUS HTTP_Post(char * data, uint32_t timeout)
             httpStatus = HTTP_POST_FAIL;
         }
         else{
-            if(pdTRUE != SendATcommand("AT+HTTPACTION=1" , "+HTTPACTION:1,200" ,5000))
+            if(pdTRUE != SendATcommand("AT+HTTPACTION=1" , "+HTTPACTION:1,200" ,20000))
             {
                 httpStatus = HTTP_POST_NETWORF_ERROR;
             }
@@ -387,7 +387,7 @@ HTTP_STATUS HTTP_Post(char * data, uint32_t timeout)
     
 }
 
-#define SECTOR_MAX_POST 5
+#define SECTOR_MAX_POST 350
 HTTP_STATUS HTTP_POST_BIGSIZE_FromSD(GPS_INFO gpsData, uint32_t sector_num, uint32_t data_size, uint32_t timeout, void (*func)(uint32_t , char *))
 {
     HTTP_STATUS httpStatus = HTTP_POST_SUCCESS;
@@ -407,9 +407,9 @@ HTTP_STATUS HTTP_POST_BIGSIZE_FromSD(GPS_INFO gpsData, uint32_t sector_num, uint
     
     // xu ly header cho next SECTOR_MAX_POST
 
-    for(i = 0; i < sector_num; i++)
+    for(i = 1; i < sector_num; i++)
     {
-        if(i % SECTOR_MAX_POST == 0)
+        if( i % SECTOR_MAX_POST == 1 )
         {
             if(sector_num < SECTOR_MAX_POST)
             {
@@ -419,11 +419,11 @@ HTTP_STATUS HTTP_POST_BIGSIZE_FromSD(GPS_INFO gpsData, uint32_t sector_num, uint
             {
                 if(sector_left < SECTOR_MAX_POST)
                 {
-                    data_size_tmp = sector_left*sizeOfAsector + header_size + sector_left - 2 + 4 ;          
+                    data_size_tmp = (sector_left - 1)*sizeOfAsector + header_size + sector_left - 2 + 4 ;
                 }
                 else
-                {
-                    data_size_tmp = (SECTOR_MAX_POST -1)*sizeOfAsector + header_size + SECTOR_MAX_POST - 2 + 4 ;
+                {                    
+                    data_size_tmp = SECTOR_MAX_POST *sizeOfAsector + header_size + SECTOR_MAX_POST - 1 + 4 ;
                 }
             }
 
@@ -438,54 +438,69 @@ HTTP_STATUS HTTP_POST_BIGSIZE_FromSD(GPS_INFO gpsData, uint32_t sector_num, uint
 
         if(httpStatus == HTTP_POST_SUCCESS)
         {
-            func(i , gpsBuff);
-            size +=strlen(gpsBuff);
-
-            if(sector_left < SECTOR_MAX_POST)
+            if( i % SECTOR_MAX_POST == 1 )
             {
-                if((i < sector_left - 1) && (i > 0)){
-                    printf("%s,",gpsBuff );
-                    size += 1;
-                }
-                else
-                    printf("%s",gpsBuff );
+                func(0 , gpsBuff);                
+                size +=strlen(gpsBuff);
+                printf("%s",gpsBuff );
             }
-            else
+            if(1)
             {
-                if(i% SECTOR_MAX_POST == SECTOR_MAX_POST -1 )
+                func(i , gpsBuff);
+                size +=strlen(gpsBuff);
+                if(sector_left < (SECTOR_MAX_POST + 1))
                 {
-                    printf("%s",gpsBuff );
-                }
-                else
-                {
-                    if(i  > 0){
+                    if(i < sector_num -1 )
+                    {
                         printf("%s,",gpsBuff );
                         size += 1;
                     }
-                }                
-            }     
+                    else
+                    {
+                        printf("%s",gpsBuff );
+                        
+                    }                    
+                }
+                else
+                {
+                    if(i % SECTOR_MAX_POST == 0 )
+                    {
+                        printf("%s",gpsBuff );
+                    }
+                    else
+                    {
+                        printf("%s,",gpsBuff );
+                        size += 1;
+                    }                    
+                }
+                
+            }
+
         }
 
-        if((i % SECTOR_MAX_POST)  == (SECTOR_MAX_POST -1))
+        if((i % SECTOR_MAX_POST)  == 0)
         {
             size += 4;
-            if (pdTRUE != SendATcommand("\n]}", "OK", 20000))
+            if (pdTRUE != SendATcommand("\n]}", "OK", 10000))
             {
                 httpStatus = HTTP_POST_FAIL;
             }
 
 
-            if(pdTRUE != SendATcommand("AT+HTTPACTION=1" , "+HTTPACTION:1,200" ,5000))
+            if(pdTRUE != SendATcommand("AT+HTTPACTION=1" , "+HTTPACTION:1,200" ,15000))
             {
                 httpStatus = HTTP_POST_NETWORF_ERROR;
             }    
 
             sector_left -=  SECTOR_MAX_POST ;
+            
+            size = 0 ;
         }
     }    
 
     if(( sector_num < SECTOR_MAX_POST ) || ( sector_left < SECTOR_MAX_POST ))
     {
+        size+=4 ;
         if (pdTRUE != SendATcommand("\n]}", "OK", 20000))
         {
             httpStatus = HTTP_POST_FAIL;

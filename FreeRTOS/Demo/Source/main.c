@@ -397,8 +397,8 @@ static uint32_t WriteGPSDataInfo(uint32_t sector, GPS_INFO gpsInfo)
     uint8_t buff[256] ;
     uint32_t size;
 
-    sprintf((char*)buff, "{\"date\":\"%s\",\"lat\":\"%s\",\"lng\":\"%s\",\"speed\":\"%d\"}", gpsInfo.date,gpsInfo.latitude \
-                                                                                          , gpsInfo.longtitude,10) ;
+    sprintf((char*)buff, "{\"date\":\"%s\",\"lat\":\"%s\",\"lng\":\"%s\",\"speed\":\"%02d\",\"bearing\":\"%02d\"}", gpsInfo.date,gpsInfo.latitude \
+                                                                                          , gpsInfo.longtitude,5,20) ;
     SD_SectorWrite(sector, buff);
     size = strlen((char*)buff);
 

@@ -30,13 +30,21 @@ Build target 'Target 1'
 compiling sim908.c...
 ..\Source\sim908.h(70): warning:  #1295-D: Deprecated declaration HTTP_Release - give arg types
   HTTP_STATUS HTTP_Release();
-..\Source\sim908.c(813): warning:  #1-D: last line of file ends without a newline
+..\Source\sim908.c(831): warning:  #1-D: last line of file ends without a newline
   }
 ..\Source\sim908.c: 2 warnings, 0 errors
+compiling main.c...
+..\Source\sim908.h(70): warning:  #1295-D: Deprecated declaration HTTP_Release - give arg types
+  HTTP_STATUS HTTP_Release();
+..\Source\main.c(290): warning:  #177-D: variable "vHTTP_status"  was declared but never referenced
+      HTTP_STATUS vHTTP_status;
+..\Source\main.c(359): warning:  #177-D: function "vSaveLocationTask"  was declared but never referenced
+  static void vSaveLocationTask(void *pvParameters)
+..\Source\main.c: 3 warnings, 0 errors
 linking...
-Program Size: Code=29122 RO-data=306 RW-data=668 ZI-data=17124  
+Program Size: Code=29556 RO-data=372 RW-data=668 ZI-data=17124  
 FromELF: creating hex file...
-".\Obj\RTOSDemo.axf" - 0 Error(s), 2 Warning(s).
+".\Obj\RTOSDemo.axf" - 0 Error(s), 5 Warning(s).
 
 <h2>Software Packages used:</h2>
 
@@ -50,7 +58,7 @@ Package Vendor: Keil
   C:\Users\Administrator.ThinPC-PC\AppData\Local\Arm\Packs\Keil\STM32F1xx_DFP\2.3.0\Device\Include
 
 <h2>Collection of Component Files used:</h2>
-Build Time Elapsed:  00:00:01
+Build Time Elapsed:  00:00:02
 </pre>
 </body>
 </html>
