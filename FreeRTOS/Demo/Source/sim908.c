@@ -330,7 +330,7 @@ HTTP_STATUS HTTP_Init(char *server)
         }
         sprintf(command, "AT+HTTPPARA=\"URL\",\"%s\"", server);
         SendATcommand(command,"OK",1000);
-        SendATcommand("AT+HTTPPARA=\"CONTENT\",\"application/json\"","OK",2000);     
+        SendATcommand("AT+HTTPPARA=\"CONTENT\",\"Content-Type: application/json\"","OK",2000);     
 
         return HTTP_INIT_SUCCESS;
     }
@@ -372,7 +372,7 @@ HTTP_STATUS HTTP_Post(char * data, uint32_t timeout)
             httpStatus = HTTP_POST_FAIL;
         }
         else{
-            if(pdTRUE != SendATcommand("AT+HTTPACTION=1" , "+HTTPACTION:1,200" ,20000))
+            if(pdTRUE != SendATcommand("AT+HTTPACTION=1" , "+HTTPACTION:1,200" ,100000))
             {
                 httpStatus = HTTP_POST_NETWORF_ERROR;
             }
@@ -387,8 +387,9 @@ HTTP_STATUS HTTP_Post(char * data, uint32_t timeout)
     
 }
 
+#define MAX_SIZE   318976
 #define SECTOR_MAX_POST 350
-HTTP_STATUS HTTP_POST_BIGSIZE_FromSD(GPS_INFO gpsData, uint32_t sector_num, uint32_t data_size, uint32_t timeout, void (*func)(uint32_t , char *))
+HTTP_STATUS HTTP_POST_BIGSIZE_FromSD(uint32_t sector_num, uint32_t data_size, uint32_t timeout, void (*func)(uint32_t , char *))
 {
     HTTP_STATUS httpStatus = HTTP_POST_SUCCESS;
     char *command  = pvPortMalloc(30); 
@@ -486,8 +487,7 @@ HTTP_STATUS HTTP_POST_BIGSIZE_FromSD(GPS_INFO gpsData, uint32_t sector_num, uint
                 httpStatus = HTTP_POST_FAIL;
             }
 
-
-            if(pdTRUE != SendATcommand("AT+HTTPACTION=1" , "+HTTPACTION:1,200" ,15000))
+            if(pdTRUE != SendATcommand("AT+HTTPACTION=1" , "+HTTPACTION:1,200" ,60000))
             {
                 httpStatus = HTTP_POST_NETWORF_ERROR;
             }    
@@ -506,7 +506,7 @@ HTTP_STATUS HTTP_POST_BIGSIZE_FromSD(GPS_INFO gpsData, uint32_t sector_num, uint
             httpStatus = HTTP_POST_FAIL;
         }
 
-        if(pdTRUE != SendATcommand("AT+HTTPACTION=1" , "+HTTPACTION:1,200" ,5000))
+        if(pdTRUE != SendATcommand("AT+HTTPACTION=1" , "+HTTPACTION:1,200" ,60000))
         {
             httpStatus = HTTP_POST_NETWORF_ERROR;
         }            
@@ -517,7 +517,7 @@ HTTP_STATUS HTTP_POST_BIGSIZE_FromSD(GPS_INFO gpsData, uint32_t sector_num, uint
     return httpStatus;
 }
 
-HTTP_STATUS HTTP_POST_FromSD(GPS_INFO gpsData, uint32_t sector_num, uint32_t data_size, uint32_t timeout, void (*func)(uint32_t , char *))
+HTTP_STATUS HTTP_POST_FromSD(uint32_t sector_num, uint32_t data_size, uint32_t timeout, void (*func)(uint32_t , char *))
 {
 	char *command  = pvPortMalloc(30); 
     char *gpsBuff  = pvPortMalloc(160); 

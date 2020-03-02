@@ -172,12 +172,9 @@ int fputc(int ch, FILE *f);
 static void vGPSTask(void *pvParameters);
 
 static void vGPRSTask(void *pvParameters);
-
-static void vSaveLocationTask(void *pvParameters);
 static uint32_t WriteGPSDataInfo(uint32_t sector, GPS_INFO gpsInfo);
 static void ReadGPSInfo(uint32_t sector, char *gpsBuff);
 static uint32_t WriteJsonHeadertoSDcard(GPS_INFO gpsInfo);
-static void vSaveLocationTask(void *pvParameters);
 /*
  * Configures the timers and interrupts for the fast interrupt test as
  * described at the top of this file.
@@ -281,17 +278,16 @@ static void vGPSTask(void *pvParameters)
 //#define SERVER "http://ptsv2.com/t/Hao/post"
 //#define SERVER "http://store.redboxsa.com/update-location"
 #define SERVER          "http://ptsv2.com/t/GPSonlineSrv/post"
-#define SERVER_OFFLINE  "http://ptsv2.com/t/GPSofflineSrv/post"
+#define SERVER_OFFLINE  "http://ena1kgc4bexxh.x.pipedream.net/"
 #define RESPONSE_DATA   "status:true"
-#define MAX_SIZE   318976
 static void vGPRSTask(void *pvParameters)
 {
     GPS_INFO vGPSinfo;
-    HTTP_STATUS vHTTP_status;
     char gprs_buffer[GPRS_BUFFER_SIZE] ;
     uint32_t sector = 1 ;
     uint32_t size = 0;
     uint32_t latestOnlineStatus = pdTRUE;
+    uint32_t index;
     // Set up sim908
     Sim908_setup();
     // setting gprs for Sim module
@@ -301,6 +297,25 @@ static void vGPRSTask(void *pvParameters)
 
     STM_EVAL_SPI_Init();
     SD_Init();   
+
+
+    #if 0 // for testing
+    strcpy(vGPSinfo.latitude,  "2101.546917");
+    strcpy(vGPSinfo.longtitude,"10547.778668");
+    strcpy(vGPSinfo.IMEI,"861001005868241");
+	
+	for(index = 0; index < 800 ; index++)
+    {
+        size += WriteGPSDataInfo(sector, vGPSinfo);
+        sector++ ;
+    }
+  
+
+    
+    HTTP_Init(SERVER);
+    size += WriteJsonHeadertoSDcard(vGPSinfo);
+    HTTP_POST_BIGSIZE_FromSD(sector, size , 60000, ReadGPSInfo) ;
+     #endif
 
     xTaskCreate(vGPSTask, "GPS", mainGPS_TASK_STACK_SIZE, NULL, mainGPS_TASK_PRIORITY, NULL);
     
@@ -314,7 +329,7 @@ static void vGPRSTask(void *pvParameters)
                 sprintf(gprs_buffer, "%s,%s,0,0,%d,%d,%s,%s,0,0,0,%s\r\n", GPRS_HEAD_CMD, vGPSinfo.IMEI, vGPSinfo.MCC,
                     vGPSinfo.MNC,vGPSinfo.LAC,vGPSinfo.CELLID, GPRS_END_CMD);*/
             }
-            else // GPS fix
+            else // GPS 
             {
                 if( xSemaphoreTake( SIM908_Mutex, ( TickType_t ) portMAX_DELAY ) == pdTRUE )
                 {
@@ -330,7 +345,7 @@ static void vGPRSTask(void *pvParameters)
                                 HTTP_Init(SERVER_OFFLINE);
                                 size += WriteJsonHeadertoSDcard(vGPSinfo);
                                 //HTTP_POST_FromSD(vGPSinfo, sector, size , 20000, ReadGPSInfo) ;
-                                HTTP_POST_BIGSIZE_FromSD(vGPSinfo, sector, size , 20000, ReadGPSInfo) ;
+                                HTTP_POST_BIGSIZE_FromSD(sector, size , 20000, ReadGPSInfo) ;
                                 HTTP_Init(SERVER);
                                 sector = 1; // sector start for write data  
                                 size = 0;                             
@@ -355,23 +370,6 @@ static void vGPRSTask(void *pvParameters)
         }  
     }
 }
-
-static void vSaveLocationTask(void *pvParameters)
-{
-    
-    STM_EVAL_SPI_Init();
-    SD_Init();    
-//    SD_SectorWrite(0x00, "TEST");
-//    SD_SectorRead( 0x0, buff );
-    
-    xTaskCreate(vGPSTask, "SAVELOC", mainSAVELOC_TASK_STACK_SIZE, NULL, mainSAVE_LOCATION_TASK_PRIORITY, NULL);
-
-    for (;;)
-    {
-    }
-}
-
-
 
 static uint32_t WriteJsonHeadertoSDcard(GPS_INFO gpsInfo)
 {

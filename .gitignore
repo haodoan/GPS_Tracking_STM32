@@ -2,4 +2,6 @@
 *.dell
 *.uvoptx
 *.lst
+*.log
+*.scvd
 FreeRTOS/Demo/CORTEX_STM32F103_Keil/Obj
