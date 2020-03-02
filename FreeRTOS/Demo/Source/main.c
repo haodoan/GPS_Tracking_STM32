@@ -304,7 +304,7 @@ static void vGPRSTask(void *pvParameters)
     strcpy(vGPSinfo.longtitude,"10547.778668");
     strcpy(vGPSinfo.IMEI,"861001005868241");
 	
-	for(index = 0; index < 800 ; index++)
+	for(index = 0; index < 2500 ; index++)
     {
         size += WriteGPSDataInfo(sector, vGPSinfo);
         sector++ ;
@@ -312,9 +312,9 @@ static void vGPRSTask(void *pvParameters)
   
 
     
-    HTTP_Init(SERVER);
+    HTTP_Init(SERVER_OFFLINE);
     size += WriteJsonHeadertoSDcard(vGPSinfo);
-    HTTP_POST_BIGSIZE_FromSD(sector, size , 60000, ReadGPSInfo) ;
+    HTTP_POST_BIGSIZE_FromSD(sector, size , 30000, ReadGPSInfo) ;
      #endif
 
     xTaskCreate(vGPSTask, "GPS", mainGPS_TASK_STACK_SIZE, NULL, mainGPS_TASK_PRIORITY, NULL);
