@@ -51,6 +51,11 @@ typedef struct gps_info_t
 #define MAX_LENGH_STR  128
 #define SIM908_PWRON   GPIO_WriteBit(GPIOB, GPIO_Pin_0, Bit_SET)
 #define SIM908_PWROFF  GPIO_WriteBit(GPIOB, GPIO_Pin_0, Bit_RESET)
+
+#define SIM908_LED_GPSFIX_ON   GPIO_WriteBit(GPIOC, GPIO_Pin_0, Bit_SET)
+#define SIM908_LED_GPSFIX_OFF  GPIO_WriteBit(GPIOC, GPIO_Pin_0, Bit_RESET)
+#define SIM908_RF_DISABLE_INPUT GPIO_ReadInputDataBit(GPIOC, GPIO_Pin_1)
+
 #define delay_ms(x)    vTaskDelay(x)
 
 uint8_t GetResponse(char *buff_receive, uint32_t timeout);
@@ -81,5 +86,6 @@ void GetCellid(GPS_INFO  *info_cellid );
 void GetCmdDataSIM(char *str , char DATA_AT[5][10]);
 uint8_t GetIMEI(char * imei);
 void jsonDataPost(GPS_INFO gpsData,char *outBuffer);
-//int8_t TCPSendATcommand(char *ATcommand, char *expected_answer,unsigned int timeout);
-
+void Disable_RF();
+void Enable_RF();
+uint32_t CheckIPaddressExist();

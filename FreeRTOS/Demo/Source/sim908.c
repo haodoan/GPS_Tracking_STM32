@@ -193,7 +193,11 @@ uint8_t get_GPS(GPS_INFO *vGPSinfo)
  * Function Name : Config_GPRS_SIM908
  * Description   : Config GPRS for modul SIM908
  * This function use config gprs to sim908
- *
+ * 
+AT+SAPBR=3,1,"Contype","GPRS"
+AT+SAPBR=3,1,"APN","v-internet"
+AT+SAPBR=1,1
+
  *END**************************************************************************/
 void Config_GPRS_SIM908(void)
 {
@@ -207,10 +211,32 @@ void Config_GPRS_SIM908(void)
     SendATcommand("AT+SAPBR=3,1,\"Contype\",\"GPRS\"","OK",2000);
     SendATcommand("AT+SAPBR=3,1,\"APN\",\"v-internet\"","OK",2000);
     SendATcommand("AT+SAPBR=1,1","OK",2000);
-    SendATcommand("AT+SAPBR=2,1","OK",2000);
+    while(pdTRUE == SendATcommand("AT+SAPBR=2,1","SAPBR: 1,3,\"0.0.0.0\"",5000))
+    {
+       SendATcommand("AT+SAPBR=1,1","OK",2000); 
+    }
 	
 }
 
+
+/*FUNCTION**********************************************************************
+ *
+ * Function Name : CheckIPaddressExist
+ * Description   : Check Ip address is exist
+ * This function for checking Ip address is exist
+ * 
+ *END**************************************************************************/
+uint32_t CheckIPaddressExist()
+{
+    if(pdTRUE == SendATcommand("AT+SAPBR=2,1","SAPBR: 1,3,\"0.0.0.0\"",2000))
+    {
+        return 0;
+    }
+    else
+    {
+        return 1;
+    }
+}
 /*FUNCTION**********************************************************************
  *
  * Function Name : Tcp_Connect
@@ -309,7 +335,7 @@ TCP_STATUS TCP_Close(void)
  *       AT+HTTPSSL=1
  *       AT+HTTPPARA="CID",1
  * This function
- *
+ AT+HTTPPARA="CONTENT","application/json"
  *END**************************************************************************/
 HTTP_STATUS HTTP_Init(char *server)
 {
@@ -318,7 +344,7 @@ HTTP_STATUS HTTP_Init(char *server)
 	
     SendATcommand("AT+HTTPTERM","OK",1000);
 	
-	  Config_GPRS_SIM908();
+    Config_GPRS_SIM908();
 		//SendATcommand("AT+SAPBR=3,1,\"Contype\",\"GPRS\"","OK",2000);
     eRet = SendATcommand("AT+HTTPINIT","OK",1000);
     if(eRet == pdTRUE)
@@ -372,7 +398,7 @@ HTTP_STATUS HTTP_Post(char * data, uint32_t timeout)
             httpStatus = HTTP_POST_FAIL;
         }
         else{
-            if(pdTRUE != SendATcommand("AT+HTTPACTION=1" , "+HTTPACTION:1,200" ,100000))
+            if(pdTRUE != SendATcommand("AT+HTTPACTION=1" , "+HTTPACTION:1,200" ,20000))
             {
                 httpStatus = HTTP_POST_NETWORF_ERROR;
             }
@@ -700,13 +726,13 @@ void Sim908_setup(void)
     {
         while(1);
     }
- //   Sim908_power_on(); // Power up Sim908 module
+    //Sim908_power_on(); // Power up Sim908 module
     //GetIMEI(imei);
     //GetAccount();
     /*****Config Sim908 Module *****************************/
     SendATcommand("AT+CFUN=1", "OK", 2000);       // off echo
     SendATcommand("AT+CIPSHUT", "SHUT OK", 3000); // disconect gprs
-    SendATcommand("AT+CSCLK=1", "OK", 2000);      // sleep mode
+    SendATcommand("AT+CSCLK=0", "OK", 2000);      // sleep mode
     SendATcommand("AT+CMGF=1", "OK", 2000);
     // GPIO_WriteLow(DTR_GPIO_PORT, (GPIO_Pin_TypeDef)DTR_GPIO_PINS); //wake up
     // Power up GPS
@@ -803,6 +829,23 @@ uint8_t GetIMEI(char * imei)
         xSemaphoreGive( xMutex );        
     }
     return error;
+}
+
+
+void Disable_RF()
+{
+    if(pdTRUE !=  SendATcommand("AT+CFUN?", "+CFUN: 4", 2000))
+    {
+        SendATcommand("AT+CFUN=4", "OK", 2000);
+    } 
+}
+
+void Enable_RF()
+{
+    if(pdTRUE !=  SendATcommand("AT+CFUN?", "+CFUN: 1", 2000))
+    {
+        SendATcommand("AT+CFUN=1", "OK", 2000);
+    } 
 }
 
 /*FUNCTION**********************************************************************

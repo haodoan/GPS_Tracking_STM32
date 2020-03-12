@@ -131,6 +131,7 @@ xLEDParameters *pxLEDParameters;
 const unsigned portBASE_TYPE uxNumOfLEDs = 8;
 const TickType_t xFlashRate = 125;
 
+    vParTestInitialise();
 	/* Create the eight tasks. */
 	for( uxLEDTask = 0; uxLEDTask < uxNumOfLEDs; ++uxLEDTask )
 	{

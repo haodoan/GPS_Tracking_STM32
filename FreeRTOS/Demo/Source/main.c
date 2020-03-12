@@ -204,7 +204,7 @@ int main(void)
     //  vStartSemaphoreTasks( mainSEM_TEST_PRIORITY );
     //  vStartPolledQueueTasks( mainQUEUE_POLL_PRIORITY );
     //  vStartIntegerMathTasks( mainINTEGER_TASK_PRIORITY );
-    //  vStartLEDFlashTasks( mainFLASH_TASK_PRIORITY );
+    //vStartLEDFlashTasks( mainLED_TASK_PRIORITY );
     //  vAltStartComTestTasks( mainCOM_TEST_PRIORITY, mainCOM_TEST_BAUD_RATE, mainCOM_TEST_LED );
     
     
@@ -254,6 +254,7 @@ static void vGPSTask(void *pvParameters)
             if (pdTRUE == Wait_GPS_Fix())
             {
                 //LCD_write_string(0, 0, "Fix        ");
+                SIM908_LED_GPSFIX_ON ;
                 vGPSinfo.FIX  = pdTRUE;
                 //memset(&vGPSinfo, '\0', sizeof(GPS_INFO));
                 get_GPS(&vGPSinfo);
@@ -261,9 +262,19 @@ static void vGPSTask(void *pvParameters)
             else // get cell id
             {
                // LCD_write_string(0, 0, "Not Fix");
+                SIM908_LED_GPSFIX_OFF;
                 vGPSinfo.FIX = pdFALSE;
                 //memset(&vGPSinfo, '\0', sizeof(GPS_INFO));
                 //GetCellid(&vGPSinfo);
+            }
+
+            if(SIM908_RF_DISABLE_INPUT == Bit_RESET)
+            {
+                Disable_RF();
+            }
+            else
+            {
+                Enable_RF();
             }
             xSemaphoreGive( SIM908_Mutex );
         }
@@ -275,11 +286,11 @@ static void vGPSTask(void *pvParameters)
     }
 }
 /*GPRS task*/
-//#define SERVER "http://ptsv2.com/t/Hao/post"
-//#define SERVER "http://store.redboxsa.com/update-location"
-#define SERVER          "http://ptsv2.com/t/GPSonlineSrv/post"
-#define SERVER_OFFLINE  "http://ena1kgc4bexxh.x.pipedream.net/"
-#define RESPONSE_DATA   "status:true"
+#define SERVER          "http://store.redboxsa.com/update-location"
+#define SERVER_OFFLINE  "http://store.redboxsa.com/update-location-offline"
+// #define SERVER          "http://ptsv2.com/t/GPSonlineSrv/post"
+//#define SERVER_OFFLINE  "http://ena1kgc4bexxh.x.pipedream.net/"
+#define RESPONSE_DATA   "\"state\":true"
 static void vGPRSTask(void *pvParameters)
 {
     GPS_INFO vGPSinfo;
@@ -303,8 +314,8 @@ static void vGPRSTask(void *pvParameters)
     strcpy(vGPSinfo.latitude,  "2101.546917");
     strcpy(vGPSinfo.longtitude,"10547.778668");
     strcpy(vGPSinfo.IMEI,"861001005868241");
-	
-	for(index = 0; index < 2500 ; index++)
+    
+    for(index = 0; index < 2500 ; index++)
     {
         size += WriteGPSDataInfo(sector, vGPSinfo);
         sector++ ;
@@ -359,9 +370,10 @@ static void vGPRSTask(void *pvParameters)
                         latestOnlineStatus = pdFALSE;
                         size += WriteGPSDataInfo(sector, vGPSinfo);
                         sector++ ;
-                        HTTP_Init(SERVER);        
-                    }
-                          
+                        vTaskDelay(1000);
+                        HTTP_Init(SERVER);
+                        vTaskDelay(1000);        
+                    }       
                     xSemaphoreGive( SIM908_Mutex );
                 }
             
@@ -377,9 +389,9 @@ static uint32_t WriteJsonHeadertoSDcard(GPS_INFO gpsInfo)
         uint32_t size;
 
     sprintf(buff,"{\
-\"id\":%s\", \
-\"online\":false\",\
-\"gps\":true\",\
+\"id\":%s,\
+\"online\":false,\
+\"gps\":true,\
 \"position\":[\n",\
 gpsInfo.IMEI);    
 
@@ -395,8 +407,8 @@ static uint32_t WriteGPSDataInfo(uint32_t sector, GPS_INFO gpsInfo)
     uint8_t buff[256] ;
     uint32_t size;
 
-    sprintf((char*)buff, "{\"date\":\"%s\",\"lat\":\"%s\",\"lng\":\"%s\",\"speed\":\"%02d\",\"bearing\":\"%02d\"}", gpsInfo.date,gpsInfo.latitude \
-                                                                                          , gpsInfo.longtitude,5,20) ;
+    sprintf((char*)buff, "{\"date\":%s,\"lat\":%s,\"lng\":%s,\"speed\":%d,\"bearing\":%d,\"fuel\":%d}", gpsInfo.date,gpsInfo.latitude \
+                                                                                          , gpsInfo.longtitude,10,20,0) ;
     SD_SectorWrite(sector, buff);
     size = strlen((char*)buff);
 
@@ -477,10 +489,16 @@ static void prvSetupHardware(void)
     GPIO_InitStructure.GPIO_Mode = GPIO_Mode_Out_PP;
     GPIO_Init(GPIOA, &GPIO_InitStructure);
 
-    /*Initial for led and BL*/
-    GPIO_InitStructure.GPIO_Pin = GPIO_Pin_7 | GPIO_Pin_8;
+    /*Initial for led GPS fix*/
+    GPIO_InitStructure.GPIO_Pin = GPIO_Pin_0;
     GPIO_InitStructure.GPIO_Speed = GPIO_Speed_50MHz;
     GPIO_InitStructure.GPIO_Mode = GPIO_Mode_Out_PP;
+    GPIO_Init(GPIOC, &GPIO_InitStructure);
+
+    /*Initial input disale RF*/
+    GPIO_InitStructure.GPIO_Pin = GPIO_Pin_1;
+    GPIO_InitStructure.GPIO_Speed = GPIO_Speed_50MHz;
+    GPIO_InitStructure.GPIO_Mode = GPIO_Mode_IPU;
     GPIO_Init(GPIOC, &GPIO_InitStructure);
 
     /*Initial for PWKEY*/
