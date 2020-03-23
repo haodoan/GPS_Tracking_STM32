@@ -109,6 +109,11 @@ int8_t SendATcommand(char *ATcommand, char *expected_answer,unsigned int timeout
             {
                 break;
             }
+            if(strstr(cPassMessage,"+HTTPACTION:1,400"))
+            {
+                error = pdFAIL;
+                break;
+            }            
         } while (count_char < MAX_LENGH_STR);
 
         if ((count_char == MAX_LENGH_STR) || (error == pdFAIL))
@@ -211,10 +216,7 @@ void Config_GPRS_SIM908(void)
     SendATcommand("AT+SAPBR=3,1,\"Contype\",\"GPRS\"","OK",2000);
     SendATcommand("AT+SAPBR=3,1,\"APN\",\"v-internet\"","OK",2000);
     SendATcommand("AT+SAPBR=1,1","OK",2000);
-    while(pdTRUE == SendATcommand("AT+SAPBR=2,1","SAPBR: 1,3,\"0.0.0.0\"",5000))
-    {
-       SendATcommand("AT+SAPBR=1,1","OK",2000); 
-    }
+    //SendATcommand("AT+SAPBR=2,1","SAPBR: 1,3,\"0.0.0.0\"",2000);
 	
 }
 
@@ -337,14 +339,16 @@ TCP_STATUS TCP_Close(void)
  * This function
  AT+HTTPPARA="CONTENT","application/json"
  *END**************************************************************************/
+char sSERVER[64];
 HTTP_STATUS HTTP_Init(char *server)
 {
     char command[256] ;
     uint8_t eRet = pdTRUE;
 	
+    strcpy(sSERVER , server) ;
+    SendATcommand("AT+SAPBR=1,1","OK",2000);
+
     SendATcommand("AT+HTTPTERM","OK",1000);
-	
-    Config_GPRS_SIM908();
 		//SendATcommand("AT+SAPBR=3,1,\"Contype\",\"GPRS\"","OK",2000);
     eRet = SendATcommand("AT+HTTPINIT","OK",1000);
     if(eRet == pdTRUE)
@@ -414,7 +418,7 @@ HTTP_STATUS HTTP_Post(char * data, uint32_t timeout)
 }
 
 #define MAX_SIZE   318976
-#define SECTOR_MAX_POST 1000
+#define SECTOR_MAX_POST 800
 HTTP_STATUS HTTP_POST_BIGSIZE_FromSD(uint32_t sector_num, uint32_t data_size, uint32_t timeout, void (*func)(uint32_t , char *))
 {
     HTTP_STATUS httpStatus = HTTP_POST_SUCCESS;
@@ -425,6 +429,7 @@ HTTP_STATUS HTTP_POST_BIGSIZE_FromSD(uint32_t sector_num, uint32_t data_size, ui
     uint32_t header_size ;
     uint32_t i;
     uint32_t sector_left  = sector_num;
+    uint32_t error_cnt = 0;
     //uint32_t size = 0;
 
     func(0, gpsBuff);
@@ -433,7 +438,6 @@ HTTP_STATUS HTTP_POST_BIGSIZE_FromSD(uint32_t sector_num, uint32_t data_size, ui
     sizeOfAsector = strlen(gpsBuff);
     
     // xu ly header cho next SECTOR_MAX_POST
-
     for(i = 1; i < sector_num; i++)
     {
         if( i % SECTOR_MAX_POST == 1 )
@@ -471,36 +475,32 @@ HTTP_STATUS HTTP_POST_BIGSIZE_FromSD(uint32_t sector_num, uint32_t data_size, ui
                 //size +=strlen(gpsBuff);
                 printf("%s",gpsBuff );
             }
-            if(1)
+            func(i , gpsBuff);
+            //size +=strlen(gpsBuff);
+            if(sector_left < (SECTOR_MAX_POST + 1))
             {
-                func(i , gpsBuff);
-                //size +=strlen(gpsBuff);
-                if(sector_left < (SECTOR_MAX_POST + 1))
+                if(i < sector_num -1 )
                 {
-                    if(i < sector_num -1 )
-                    {
-                        printf("%s,",gpsBuff );
-                        //size += 1;
-                    }
-                    else
-                    {
-                        printf("%s",gpsBuff );
-                        
-                    }                    
+                    printf("%s,",gpsBuff );
+                    //size += 1;
                 }
                 else
                 {
-                    if(i % SECTOR_MAX_POST == 0 )
-                    {
-                        printf("%s",gpsBuff );
-                    }
-                    else
-                    {
-                        printf("%s,",gpsBuff );
-                        //size += 1;
-                    }                    
+                    printf("%s",gpsBuff );
+                    
+                }                    
+            }
+            else
+            {
+                if(i % SECTOR_MAX_POST == 0 )
+                {
+                    printf("%s",gpsBuff );
                 }
-                
+                else
+                {
+                    printf("%s,",gpsBuff );
+                    //size += 1;
+                }                    
             }
 
         }
@@ -511,39 +511,75 @@ HTTP_STATUS HTTP_POST_BIGSIZE_FromSD(uint32_t sector_num, uint32_t data_size, ui
             if (pdTRUE != SendATcommand("\n]}", "OK", 10000))
             {
                 httpStatus = HTTP_POST_FAIL;
+                break;
             }
-
-            if(pdTRUE != SendATcommand("AT+HTTPACTION=1" , "+HTTPACTION:1,200" ,120000))
+            else
             {
-               // httpStatus = HTTP_POST_NETWORF_ERROR;
-            }    
+                if(pdTRUE != SendATcommand("AT+HTTPACTION=1" , "+HTTPACTION:1,200" ,120000))
+                {
+                    if(error_cnt++ < 5)
+                    {
+                        i = i - SECTOR_MAX_POST ;
+                    }
+                    else
+                    {
+                        httpStatus = HTTP_POST_NETWORF_ERROR;
+                        error_cnt = 0;
+                        break;
 
-            sector_left -=  SECTOR_MAX_POST ;
-            
+                    }
+                    HTTP_Init(sSERVER);
+                }
+                else
+                {
+                    sector_left -=  SECTOR_MAX_POST ;
+                    error_cnt = 0;
+                    vTaskDelay(2000);
+                }   
+            } 
             //size = 0 ;
+        }
+
+        if(i == (sector_num - 1))
+        {
+            if( (HTTP_POST_SUCCESS == httpStatus) && (( sector_num < SECTOR_MAX_POST ) || ( sector_left < SECTOR_MAX_POST )))
+            {
+                //size+=4 ;
+                if (pdTRUE != SendATcommand("\n]}", "OK", 20000))
+                {
+                    httpStatus = HTTP_POST_FAIL;
+                }
+                else
+                {
+                    if(pdTRUE != SendATcommand("AT+HTTPACTION=1" , "+HTTPACTION:1,200" ,120000))
+                    {
+                        if(error_cnt++ < 5)
+                        {
+                             i = i + 1 - sector_left ;
+                        }
+                        else
+                        {
+                            error_cnt = 0;
+                            httpStatus = HTTP_POST_NETWORF_ERROR;
+                        }
+                        HTTP_Init(sSERVER);
+                    }
+                    else
+                    {
+                        error_cnt = 0;
+                    }
+                }            
+            }            
         }
     }    
 
-    if(( sector_num < SECTOR_MAX_POST ) || ( sector_left < SECTOR_MAX_POST ))
-    {
-        //size+=4 ;
-        if (pdTRUE != SendATcommand("\n]}", "OK", 20000))
-        {
-            httpStatus = HTTP_POST_FAIL;
-        }
-
-        if(pdTRUE != SendATcommand("AT+HTTPACTION=1" , "+HTTPACTION:1,200" ,120000))
-        {
-            httpStatus = HTTP_POST_NETWORF_ERROR;
-        }            
-    }
     vPortFree(command);
     vPortFree(gpsBuff);
 
     return httpStatus;
 }
 
-HTTP_STATUS HTTP_POST_FromSD(uint32_t sector_num, uint32_t data_size, uint32_t timeout, void (*func)(uint32_t , char *))
+HTTP_STATUS HTTP_POST_FromSD(uint32_t sector,uint32_t sector_num, uint32_t data_size, uint32_t timeout, void (*func)(uint32_t , char *))
 {
 	char *command  = pvPortMalloc(30); 
     char *gpsBuff  = pvPortMalloc(160); 
@@ -561,7 +597,7 @@ HTTP_STATUS HTTP_POST_FromSD(uint32_t sector_num, uint32_t data_size, uint32_t t
     sprintf(command, "AT+HTTPDATA=%d,%d",data_size + sector_num - 2 + 4 ,timeout);
     if (pdTRUE == SendATcommand(command, "DOWNLOAD", 2000))
     {
-        for(i = 0; i < sector_num; i++)
+        for(i = sector; i < sector_num; i++)
         {
             func(i , gpsBuff);
 			if((i < sector_num - 1) && (i > 0))

@@ -74,7 +74,7 @@ HTTP_STATUS HTTP_Init(char *server);
 HTTP_STATUS HTTP_Post(char * data, uint32_t timeout);
 HTTP_STATUS HTTP_Release();
 HTTP_STATUS HTTP_Read(char * datOut);
-HTTP_STATUS HTTP_POST_FromSD(uint32_t sector_num, uint32_t data_size, uint32_t timeout, void (*func)(uint32_t , char *));
+HTTP_STATUS HTTP_POST_FromSD(uint32_t sector, uint32_t sector_num, uint32_t data_size, uint32_t timeout, void (*func)(uint32_t , char *));
 HTTP_STATUS HTTP_POST_BIGSIZE_FromSD(uint32_t sector_num, uint32_t data_size, uint32_t timeout, void (*func)(uint32_t , char *));
 
 
@@ -89,3 +89,4 @@ void jsonDataPost(GPS_INFO gpsData,char *outBuffer);
 void Disable_RF();
 void Enable_RF();
 uint32_t CheckIPaddressExist();
+

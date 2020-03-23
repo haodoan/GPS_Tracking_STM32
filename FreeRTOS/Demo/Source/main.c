@@ -141,6 +141,13 @@
 #define GPRS_BUFFER_SIZE 320
 
 #define GPS_BLOCK_TIME 5000
+
+#define SERVER          "http://store.redboxsa.com/update-location"
+#define SERVER_OFFLINE  "http://store.redboxsa.com/update-location-offline"
+// #define SERVER          "http://ptsv2.com/t/GPSonlineSrv/post"
+//#define SERVER_OFFLINE  "http://ena1kgc4bexxh.x.pipedream.net/"
+//#define TESTING  1
+#define RESPONSE_DATA   "\"state\":true"
 /*-----------------------------------------------------------*/
 
 /*
@@ -247,10 +254,20 @@ static void vGPSTask(void *pvParameters)
     vGPSinfo.MCC = 452;
     vGPSinfo.MNC = 2; //Vinaphone
 
+#ifdef TESTING// for testing
+    strcpy(vGPSinfo.latitude,  "2101.546917");
+    strcpy(vGPSinfo.longtitude,"10547.778668");
+    strcpy(vGPSinfo.IMEI,"861001005868241");
+    strcpy(vGPSinfo.date,"20200313200159");
+#endif
     for (;;)
     {
         if( xSemaphoreTake( SIM908_Mutex, ( TickType_t ) portMAX_DELAY ) == pdTRUE )
         {
+
+#ifdef TESTING // for testing
+            vGPSinfo.FIX = pdTRUE;
+#else
             if (pdTRUE == Wait_GPS_Fix())
             {
                 //LCD_write_string(0, 0, "Fix        ");
@@ -267,6 +284,7 @@ static void vGPSTask(void *pvParameters)
                 //memset(&vGPSinfo, '\0', sizeof(GPS_INFO));
                 //GetCellid(&vGPSinfo);
             }
+#endif
 
             if(SIM908_RF_DISABLE_INPUT == Bit_RESET)
             {
@@ -286,19 +304,17 @@ static void vGPSTask(void *pvParameters)
     }
 }
 /*GPRS task*/
-#define SERVER          "http://store.redboxsa.com/update-location"
-#define SERVER_OFFLINE  "http://store.redboxsa.com/update-location-offline"
-// #define SERVER          "http://ptsv2.com/t/GPSonlineSrv/post"
-//#define SERVER_OFFLINE  "http://ena1kgc4bexxh.x.pipedream.net/"
-#define RESPONSE_DATA   "\"state\":true"
 static void vGPRSTask(void *pvParameters)
 {
     GPS_INFO vGPSinfo;
+    HTTP_STATUS httpStatus = HTTP_POST_SUCCESS;
     char gprs_buffer[GPRS_BUFFER_SIZE] ;
     uint32_t sector = 1 ;
     uint32_t size = 0;
     uint32_t latestOnlineStatus = pdTRUE;
     uint32_t index;
+    uint32_t tmpSize;
+    uint32_t cntError;
     // Set up sim908
     Sim908_setup();
     // setting gprs for Sim module
@@ -310,23 +326,25 @@ static void vGPRSTask(void *pvParameters)
     SD_Init();   
 
 
-    #if 0 // for testing
+#ifdef TESTING// for testing
     strcpy(vGPSinfo.latitude,  "2101.546917");
     strcpy(vGPSinfo.longtitude,"10547.778668");
     strcpy(vGPSinfo.IMEI,"861001005868241");
+    strcpy(vGPSinfo.date,"20200313200159");
+    vGPSinfo.FIX = pdTRUE;
     
-    for(index = 0; index < 2500 ; index++)
+
+    
+    for(index = 0; index <  2500; index++)
     {
         size += WriteGPSDataInfo(sector, vGPSinfo);
         sector++ ;
-    }
-  
-
-    
-    HTTP_Init(SERVER_OFFLINE);
+    }    
+/*    HTTP_Init(SERVER_OFFLINE);
     size += WriteJsonHeadertoSDcard(vGPSinfo);
-    HTTP_POST_BIGSIZE_FromSD(sector, size , 30000, ReadGPSInfo) ;
-     #endif
+    HTTP_POST_BIGSIZE_FromSD(sector, size , 30000, ReadGPSInfo) ;*/
+    
+#endif
 
     xTaskCreate(vGPSTask, "GPS", mainGPS_TASK_STACK_SIZE, NULL, mainGPS_TASK_PRIORITY, NULL);
     
@@ -346,33 +364,79 @@ static void vGPRSTask(void *pvParameters)
                 {
                     memset(gprs_buffer, '\0', sizeof(gprs_buffer) / sizeof(char));
                     jsonDataPost(vGPSinfo,gprs_buffer);
-                    if (HTTP_POST_SUCCESS == HTTP_Post(gprs_buffer , 10000))
-                    {                                  
-                        if(HTTP_READ_SUCCESS == HTTP_Read(RESPONSE_DATA))
-                        {
-                            vGPSinfo.ONLINE = pdTRUE ;
-                            if(latestOnlineStatus == pdFALSE)
+
+                    if(CheckIPaddressExist())
+                    {
+                        if (HTTP_POST_SUCCESS == HTTP_Post(gprs_buffer , 10000))
+                        {                                  
+                            if(HTTP_READ_SUCCESS == HTTP_Read(RESPONSE_DATA))
                             {
-                                HTTP_Init(SERVER_OFFLINE);
-                                size += WriteJsonHeadertoSDcard(vGPSinfo);
-                                //HTTP_POST_FromSD(vGPSinfo, sector, size , 20000, ReadGPSInfo) ;
-                                HTTP_POST_BIGSIZE_FromSD(sector, size , 20000, ReadGPSInfo) ;
-                                HTTP_Init(SERVER);
-                                sector = 1; // sector start for write data  
-                                size = 0;                             
+                                vGPSinfo.ONLINE = pdTRUE ;
+                                SIM908_LED_GPSFIX_OFF;
+                                if(latestOnlineStatus == pdFALSE)
+                                {
+                                    size += WriteJsonHeadertoSDcard(vGPSinfo);
+                                    cntError = 0;
+                                    do
+                                    {
+                                        vTaskDelay(500);
+                                        HTTP_Init(SERVER_OFFLINE);
+                                        httpStatus = HTTP_POST_BIGSIZE_FromSD(sector, size , 20000, ReadGPSInfo) ;
+                                        if(++cntError == 1) break;
+                                    }while( httpStatus != HTTP_POST_SUCCESS );
+                                   
+                                    vTaskDelay(500);
+                                    SIM908_LED_GPSFIX_OFF;
+                                    HTTP_Init(SERVER);
+                                    #ifndef TESTING
+                                    sector = 1; // sector start for write data  
+                                    size = 0;
+                                    #endif                      
+                                }
+                                latestOnlineStatus = pdTRUE;                     
                             }
-                            latestOnlineStatus = pdTRUE;                     
                         }
+                        else
+                        {
+                            #ifndef TESTING
+                            vGPSinfo.ONLINE = pdFALSE ;
+                            latestOnlineStatus = pdFALSE;
+                            vTaskDelay(10000);
+                            tmpSize =  WriteGPSDataInfo(sector, vGPSinfo);
+                            size += tmpSize;
+                            if(tmpSize != 0)
+                            {
+                                sector++ ;                                
+                            }
+
+                            HTTP_Init(SERVER);
+                            vTaskDelay(1000);
+                            #else 
+                            vTaskDelay(500);
+                            HTTP_Init(SERVER);
+                            vTaskDelay(500);
+                            #endif        
+                        }                          
                     }
                     else
                     {
                         vGPSinfo.ONLINE = pdFALSE ;
                         latestOnlineStatus = pdFALSE;
-                        size += WriteGPSDataInfo(sector, vGPSinfo);
-                        sector++ ;
-                        vTaskDelay(1000);
+                    #ifndef TESTING
+                        vTaskDelay(10000);
+                        tmpSize =  WriteGPSDataInfo(sector, vGPSinfo);
+                        size += tmpSize;
+                        if(tmpSize != 0)
+                        {
+                            sector++ ;                                
+                        }
                         HTTP_Init(SERVER);
-                        vTaskDelay(1000);        
+                        vTaskDelay(1000);
+                    #else 
+                        vTaskDelay(500);
+                        HTTP_Init(SERVER);
+                        vTaskDelay(500);  
+                    #endif        
                     }       
                     xSemaphoreGive( SIM908_Mutex );
                 }
@@ -406,11 +470,23 @@ static uint32_t WriteGPSDataInfo(uint32_t sector, GPS_INFO gpsInfo)
 
     uint8_t buff[256] ;
     uint32_t size;
+    static uint32_t referenceSize;
 
     sprintf((char*)buff, "{\"date\":%s,\"lat\":%s,\"lng\":%s,\"speed\":%d,\"bearing\":%d,\"fuel\":%d}", gpsInfo.date,gpsInfo.latitude \
                                                                                           , gpsInfo.longtitude,10,20,0) ;
-    SD_SectorWrite(sector, buff);
-    size = strlen((char*)buff);
+    if(sector == 1)
+    {
+        referenceSize = strlen((char*)buff);        
+    }
+    size =  strlen((char*)buff);
+    if(referenceSize == size)
+    {
+        SD_SectorWrite(sector, buff);      
+    }
+		else
+		{
+			size = 0;
+		}
 
     return size ;
 }
